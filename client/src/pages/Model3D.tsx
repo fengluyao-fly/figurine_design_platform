@@ -6,7 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Box, ArrowLeft, Loader2, Download, CreditCard } from "lucide-react";
 import { Link, useLocation, useParams } from "wouter";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import "@google/model-viewer";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
@@ -169,21 +170,48 @@ export default function Model3D() {
               
               {modelStatus === "completed" && modelUrl && (
                 <div className="space-y-4">
-                  <div className="aspect-square bg-muted rounded-lg flex items-center justify-center relative overflow-hidden">
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-amber-100">
-                      <div className="text-center">
-                        <Box className="h-16 w-16 text-primary mx-auto mb-4" />
-                        <p className="text-sm font-medium">3D Model Ready</p>
-                        <p className="text-xs text-muted-foreground mt-1">Download to view in 3D software</p>
+                  <div className="aspect-square bg-gradient-to-br from-purple-100 to-amber-100 rounded-lg overflow-hidden">
+                    {/* @ts-ignore - model-viewer is a custom element */}
+                    <model-viewer
+                      src={modelUrl}
+                      alt="3D Figurine Model"
+                      auto-rotate
+                      camera-controls
+                      shadow-intensity="1"
+                      exposure="1"
+                      shadow-softness="0.5"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        minHeight: '400px',
+                      }}
+                      loading="eager"
+                    >
+                      <div slot="progress-bar" style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        textAlign: 'center',
+                      }}>
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
                       </div>
-                    </div>
+                      {/* @ts-ignore */}
+                    </model-viewer>
                   </div>
-                  <Button variant="outline" className="w-full" asChild>
-                    <a href={modelUrl} download>
-                      <Download className="mr-2 h-4 w-4" />
-                      Download 3D Model
-                    </a>
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button variant="outline" className="flex-1" asChild>
+                      <a href={modelUrl} download>
+                        <Download className="mr-2 h-4 w-4" />
+                        Download GLB
+                      </a>
+                    </Button>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-3">
+                    <p className="text-xs text-muted-foreground">
+                      💡 <strong>Tip:</strong> Click and drag to rotate • Scroll to zoom • Right-click and drag to pan
+                    </p>
+                  </div>
                 </div>
               )}
               
