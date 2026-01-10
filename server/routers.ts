@@ -8,6 +8,7 @@ import { createMultiviewTo3DTask, waitForTaskCompletion } from "./tripo";
 import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
 import { generateImage } from "./_core/imageGeneration";
+import { generateImageWithReplicate } from "./replicate-image";
 import Stripe from "stripe";
 import { PRODUCTS } from "./products";
 
@@ -109,6 +110,7 @@ export const appRouter = router({
             const prompt = `${project.description}, ${view}, three-view drawing, orthographic projection, white background, professional product design, detailed, high quality`;
             
             try {
+              // Use Manus built-in image generation API
               const result = await generateImage({
                 prompt,
                 ...(project.sketchUrl && groupNum === 1 ? {

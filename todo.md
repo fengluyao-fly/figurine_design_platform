@@ -60,3 +60,9 @@
 - [x] Add interactive 3D model viewer to Model3D page
 - [x] Replace placeholder with real model-viewer component
 - [x] Test 3D model display with GLB files
+
+## Bug Fixes - Image Generation
+- [x] Debug image generation failure (Manus API quota exhausted)
+- [x] Integrate Replicate API as alternative (available if needed)
+- [x] Restored to use Manus built-in API
+- [ ] User needs to contact Manus support for quota/billing: https://help.manus.im
