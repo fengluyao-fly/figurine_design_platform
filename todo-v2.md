@@ -58,3 +58,35 @@
 - [x] Update image generation to use Replicate instead of Manus API
 - [x] Implement img2img mode for all groups (use uploaded image as reference)
 - [ ] Test generation with uploaded image
+
+## Bug Fixes - Image Generation Error (2026-01-12)
+- [x] Investigate "Image generation failed for front view" error (429 rate limit due to low balance)
+- [x] Check server logs for detailed error messages (Replicate balance < $5)
+- [x] Fix Replicate API call issues (User recharged account)
+- [x] Test image generation with different inputs (API working normally)
+
+## Critical Fix - Three-View Generation (FINAL SOLUTION)
+- [x] Integrate Google Nano Banana Pro for three-view generation
+- [x] Generate 3 design variations using Nano Banana Pro
+- [x] Each variation: 1 image containing front/side/back views in a single sheet
+- [x] Implement automatic image splitting to extract 3 separate files from each sheet
+- [x] Use sharp library for precise image cropping
+- [x] Ensure text description modifies the reference image (img2img mode)
+- [x] Pass all 3 split images to Tripo AI for 3D model generation
+- [ ] Test with user's example: "Make the whole body of this 3 year old boy. Wearing white socks in black sneakers."
+- [x] Cost: $0.15 per variation (2K resolution)
+
+## Retry Logic for Rate Limiting
+- [x] Implement smart retry logic for Replicate API 429 errors
+- [x] Auto-detect retry_after from error response
+- [x] Add intelligent wait time with buffer
+- [x] Max 5 retries before failing
+- [x] Test with rate-limited scenarios
+- [x] Fix retry logic counter increment order
+
+## Download Retry Logic
+- [x] Implement download retry logic for image fetching
+- [x] Add 30-second timeout for each download attempt
+- [x] Max 3 retries with 5-second delay between attempts
+- [x] Successfully tested with Nano Banana Pro generated images
+- [x] All images uploaded to S3/CloudFront successfully

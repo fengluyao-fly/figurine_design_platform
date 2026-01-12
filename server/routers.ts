@@ -7,7 +7,8 @@ import { createProject, getProjectById, getProjectsBySession, updateProjectStatu
 import { createMultiviewTo3DTask, waitForTaskCompletion } from "./tripo";
 import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
-import { generateImageWithReplicate } from "./replicate-image";
+import { generateImageWithReplicate } from "./replicate-image.js";
+import { generateThreeViews } from "./nano-banana.js";
 import Stripe from "stripe";
 import { PRODUCTS } from "./products";
 
@@ -99,50 +100,58 @@ export const appRouter = router({
         
         // Generate 3 groups of three-view images
         const groups = [];
+        
+        // Generate 3 different design variations using Nano Banana Pro
         for (let groupNum = 1; groupNum <= 3; groupNum++) {
-          const imageUrls: string[] = [];
-          const imageKeys: string[] = [];
+          // Build prompt for three-view generation
+          let basePrompt = project.description && project.description.trim()
+            ? project.description
+            : "product design";
           
-          // Generate 3 images per group (front, side, back views)
-          const views = ["front view", "side view", "back view"];
-          for (const view of views) {
-            // Build comprehensive prompt
-            let fullPrompt = `${project.description}, ${view}, three-view drawing, orthographic projection, white background, professional product design, detailed, high quality`;
+          // Add variation hint
+          const fullPrompt = `${basePrompt}. Design variation ${groupNum}.`;
+          
+          try {
+            console.log(`[Generations] Generating three-view for group ${groupNum}...`);
             
-            // If user provided description, incorporate it
-            if (project.description) {
-              fullPrompt = `Product: ${project.description}. Generate a ${view} in three-view drawing style, orthographic projection, white background, professional product design, detailed, high quality`;
-            }
+            // Use Nano Banana Pro to generate and split three views
+            const threeViews = await generateThreeViews({
+              prompt: fullPrompt,
+              imageUrl: project.sketchUrl || undefined,
+              resolution: "2K",
+            });
             
-            try {
-              // Use Replicate API with img2img if reference image exists
-              const result = await generateImageWithReplicate({
+            // Save generation to database with 3 separate image URLs
+            const imageUrls = [
+              threeViews.frontView,
+              threeViews.sideView,
+              threeViews.backView,
+            ];
+            
+            await createGeneration({
+              projectId: input.projectId,
+              type: "three_view",
+              groupNumber: groupNum,
+              assetUrls: JSON.stringify(imageUrls),
+              assetKeys: JSON.stringify(imageUrls.map(url => url.split('/').pop() || '')),
+              isSelected: false,
+              metadata: JSON.stringify({ 
+                description: project.description,
                 prompt: fullPrompt,
-                imageUrl: project.sketchUrl || undefined, // Use reference image for ALL groups
-              });
-              
-              if (result.url) {
-                imageUrls.push(result.url);
-                imageKeys.push(result.url.split('/').pop() || '');
-              }
-            } catch (error) {
-              console.error(`Failed to generate ${view} for group ${groupNum}:`, error);
-              throw new Error(`Image generation failed for ${view}`);
-            }
+              }),
+            });
+            
+            groups.push({ 
+              groupNumber: groupNum, 
+              imageUrls,
+            });
+            
+            console.log(`[Generations] Group ${groupNum} completed with 3 views`);
+            
+          } catch (error) {
+            console.error(`Failed to generate three-view for group ${groupNum}:`, error);
+            throw new Error(`Image generation failed for design variation ${groupNum}`);
           }
-          
-          // Save generation to database
-          await createGeneration({
-            projectId: input.projectId,
-            type: "three_view",
-            groupNumber: groupNum,
-            assetUrls: JSON.stringify(imageUrls),
-            assetKeys: JSON.stringify(imageKeys),
-            isSelected: false,
-            metadata: JSON.stringify({ description: project.description }),
-          });
-          
-          groups.push({ groupNumber: groupNum, imageUrls });
         }
         
         // Update project status to completed
