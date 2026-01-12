@@ -1,7 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Box, ArrowLeft, Loader2, Sparkles, Check } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Box, ArrowLeft, Loader2, Sparkles, Check, Edit, ArrowRight } from "lucide-react";
 import { Link, useLocation, useParams } from "wouter";
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
@@ -13,13 +16,15 @@ export default function GenerateDesign() {
   const [, setLocation] = useLocation();
   const [selectedGroup, setSelectedGroup] = useState<number | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [editPrompt, setEditPrompt] = useState("");
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const { data: project, isLoading: projectLoading } = trpc.projects.getById.useQuery({ id: projectId });
   const { data: generations, refetch: refetchGenerations } = trpc.generations.getByProject.useQuery({ projectId });
 
   const generateImagesMutation = trpc.generations.generateThreeViews.useMutation({
     onSuccess: () => {
-      toast.success("Three-view designs generated successfully!");
+      toast.success("Designs generated successfully!");
       refetchGenerations();
       setIsGenerating(false);
     },
@@ -52,15 +57,34 @@ export default function GenerateDesign() {
   };
 
   const handleSelectGroup = (groupNumber: number) => {
-    if (selectedGroup === groupNumber) {
-      // Confirm selection and proceed to 3D generation
-      const generation = generations?.find(g => g.groupNumber === groupNumber);
-      if (generation) {
-        selectGroupMutation.mutate({ generationId: generation.id, projectId });
-      }
-    } else {
-      setSelectedGroup(groupNumber);
-      toast.info("Click again to confirm and generate 3D model");
+    setSelectedGroup(groupNumber);
+  };
+
+  const handleEditWithText = () => {
+    if (!selectedGroup) {
+      toast.error("Please select a design group first");
+      return;
+    }
+
+    if (!editPrompt.trim()) {
+      toast.error("Please enter modification instructions");
+      return;
+    }
+    
+    // TODO: Implement edit generation (only 1 group)
+    toast.info("Text-based editing will be implemented with Replicate API");
+    setIsEditDialogOpen(false);
+  };
+
+  const handleGenerate3D = () => {
+    if (!selectedGroup) {
+      toast.error("Please select a design group first");
+      return;
+    }
+
+    const generation = generations?.find(g => g.groupNumber === selectedGroup && g.type === "three_view");
+    if (generation) {
+      selectGroupMutation.mutate({ generationId: generation.id, projectId });
     }
   };
 
@@ -88,9 +112,21 @@ export default function GenerateDesign() {
   }
 
   const threeViewGroups = generations?.filter(g => g.type === "three_view") || [];
-  const groupedGenerations = [1, 2, 3].map(groupNum => 
-    threeViewGroups.filter(g => g.groupNumber === groupNum)
-  );
+  
+  // Group images by groupNumber
+  const groupedImages: { [key: number]: string[] } = {};
+  threeViewGroups.forEach(gen => {
+    const groupNum = gen.groupNumber;
+    if (groupNum !== null && groupNum !== undefined) {
+      if (!groupedImages[groupNum]) {
+        groupedImages[groupNum] = [];
+      }
+      const urls = JSON.parse(gen.assetUrls);
+      groupedImages[groupNum] = urls;
+    }
+  });
+
+  const hasGenerations = Object.keys(groupedImages).length > 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-purple-50/30 to-amber-50/20">
@@ -101,11 +137,11 @@ export default function GenerateDesign() {
             <div className="flex items-center gap-2 cursor-pointer">
               <Box className="h-8 w-8 text-primary" />
               <span className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                FigurineForge
+                Maker Mart
               </span>
             </div>
           </Link>
-          <Link href="/create">
+          <Link href="/">
             <Button variant="ghost">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back
@@ -121,7 +157,7 @@ export default function GenerateDesign() {
           <CardHeader>
             <div className="flex items-start justify-between">
               <div>
-                <CardTitle className="text-2xl mb-2">Your Figurine Design</CardTitle>
+                <CardTitle className="text-2xl mb-2">Your Product Design</CardTitle>
                 <CardDescription className="text-base">{project.description}</CardDescription>
               </div>
               <Badge variant="secondary" className="text-sm">
@@ -131,10 +167,10 @@ export default function GenerateDesign() {
           </CardHeader>
           {project.sketchUrl && (
             <CardContent>
-              <p className="text-sm font-medium mb-2">Reference Sketch:</p>
+              <p className="text-sm font-medium mb-2">Reference Image:</p>
               <img
                 src={project.sketchUrl}
-                alt="Reference sketch"
+                alt="Reference"
                 className="max-h-48 rounded-lg border"
               />
             </CardContent>
@@ -148,43 +184,42 @@ export default function GenerateDesign() {
               <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2">Generating Three-View Designs...</h3>
               <p className="text-muted-foreground">
-                Our AI is creating 3 unique design variations for you. This may take 30-60 seconds.
+                Our AI is creating 9 design views (3 groups × 3 views). This may take 30-90 seconds.
               </p>
             </CardContent>
           </Card>
         )}
 
-        {/* Three-View Groups */}
-        {!isGenerating && groupedGenerations.some(g => g.length > 0) && (
+        {/* 9 Images Display (3 groups × 3 views) */}
+        {!isGenerating && hasGenerations && (
           <>
             <div className="mb-6">
-              <h2 className="text-3xl font-bold mb-2">Select Your Favorite Design</h2>
+              <h2 className="text-3xl font-bold mb-2">Select Your Favorite Design Group</h2>
               <p className="text-muted-foreground text-lg">
-                Choose one of the three design variations below. Click once to select, click again to confirm and generate 3D model.
+                We generated 9 views organized in 3 groups. Each group shows front, side, and back views. Select one group to proceed.
               </p>
             </div>
 
             <div className="grid lg:grid-cols-3 gap-6 mb-8">
-              {groupedGenerations.map((group, groupIndex) => {
-                const groupNumber = groupIndex + 1;
+              {[1, 2, 3].map(groupNumber => {
+                const imageUrls = groupedImages[groupNumber] || [];
                 const isSelected = selectedGroup === groupNumber;
-                const hasImages = group.length > 0;
-
-                if (!hasImages) return null;
-
-                const imageUrls = JSON.parse(group[0].assetUrls);
+                
+                if (imageUrls.length === 0) return null;
 
                 return (
                   <Card
                     key={groupNumber}
                     className={`border-2 cursor-pointer transition-all hover:shadow-xl ${
-                      isSelected ? "border-primary shadow-lg ring-2 ring-primary/20" : "border-border hover:border-primary/50"
+                      isSelected 
+                        ? "border-primary shadow-lg ring-4 ring-primary/30" 
+                        : "border-border hover:border-primary/50"
                     }`}
                     onClick={() => handleSelectGroup(groupNumber)}
                   >
                     <CardHeader>
                       <div className="flex items-center justify-between">
-                        <CardTitle className="text-xl">Design {groupNumber}</CardTitle>
+                        <CardTitle className="text-xl">Group {groupNumber}</CardTitle>
                         {isSelected && (
                           <Badge className="bg-primary">
                             <Check className="h-4 w-4 mr-1" />
@@ -193,19 +228,19 @@ export default function GenerateDesign() {
                         )}
                       </div>
                       <CardDescription>
-                        {isSelected ? "Click again to confirm" : "Click to select"}
+                        {isSelected ? "Selected for 3D generation" : "Click to select this group"}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
                       {imageUrls.map((url: string, idx: number) => (
-                        <div key={idx} className="relative aspect-square bg-muted rounded-lg overflow-hidden">
+                        <div key={idx} className="relative aspect-video bg-muted rounded-lg overflow-hidden">
                           <img
                             src={url}
-                            alt={`Design ${groupNumber} - View ${idx + 1}`}
+                            alt={`Group ${groupNumber} - View ${idx + 1}`}
                             className="w-full h-full object-cover"
                           />
-                          <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-                            View {idx + 1}
+                          <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                            {["Front", "Side", "Back"][idx]} View
                           </div>
                         </div>
                       ))}
@@ -215,13 +250,69 @@ export default function GenerateDesign() {
               })}
             </div>
 
-            <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/5">
+            {/* Action Buttons */}
+            {selectedGroup && (
+              <Card className="mb-8 border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/5">
+                <CardContent className="py-6">
+                  <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div>
+                      <h3 className="text-lg font-semibold mb-1">What would you like to do next?</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Edit the selected design with text instructions, or proceed to 3D model generation
+                      </p>
+                    </div>
+                    <div className="flex gap-3">
+                      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="lg">
+                            <Edit className="mr-2 h-5 w-5" />
+                            Edit with Text
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Edit Design with Text</DialogTitle>
+                            <DialogDescription>
+                              Describe the modifications you'd like to make. We'll generate a new version of Group {selectedGroup || 1}.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4 py-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="edit-prompt">Modification Instructions</Label>
+                              <Textarea
+                                id="edit-prompt"
+                                placeholder="Example: Make the character taller, change the hat color to red, add more details to the base..."
+                                value={editPrompt}
+                                onChange={(e) => setEditPrompt(e.target.value)}
+                                rows={5}
+                              />
+                            </div>
+                            <Button onClick={handleEditWithText} className="w-full">
+                              <Sparkles className="mr-2 h-5 w-5" />
+                              Generate Modified Design
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+
+                      <Button onClick={handleGenerate3D} size="lg" className="bg-gradient-to-r from-primary to-purple-600">
+                        Generate 3D Model
+                        <ArrowRight className="ml-2 h-5 w-5" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Regenerate Option */}
+            <Card className="border-2 border-border/50">
               <CardContent className="py-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-lg font-semibold mb-1">Not satisfied with these designs?</h3>
                     <p className="text-sm text-muted-foreground">
-                      Generate a new set of three-view designs
+                      Generate a completely new set of 9 design views
                     </p>
                   </div>
                   <Button
@@ -231,7 +322,7 @@ export default function GenerateDesign() {
                     size="lg"
                   >
                     <Sparkles className="mr-2 h-5 w-5" />
-                    Generate New Designs
+                    Generate New Set
                   </Button>
                 </div>
               </CardContent>

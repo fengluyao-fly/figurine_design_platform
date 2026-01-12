@@ -7,7 +7,6 @@ import { createProject, getProjectById, getProjectsBySession, updateProjectStatu
 import { createMultiviewTo3DTask, waitForTaskCompletion } from "./tripo";
 import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
-import { generateImage } from "./_core/imageGeneration";
 import { generateImageWithReplicate } from "./replicate-image";
 import Stripe from "stripe";
 import { PRODUCTS } from "./products";
@@ -107,18 +106,19 @@ export const appRouter = router({
           // Generate 3 images per group (front, side, back views)
           const views = ["front view", "side view", "back view"];
           for (const view of views) {
-            const prompt = `${project.description}, ${view}, three-view drawing, orthographic projection, white background, professional product design, detailed, high quality`;
+            // Build comprehensive prompt
+            let fullPrompt = `${project.description}, ${view}, three-view drawing, orthographic projection, white background, professional product design, detailed, high quality`;
+            
+            // If user provided description, incorporate it
+            if (project.description) {
+              fullPrompt = `Product: ${project.description}. Generate a ${view} in three-view drawing style, orthographic projection, white background, professional product design, detailed, high quality`;
+            }
             
             try {
-              // Use Manus built-in image generation API
-              const result = await generateImage({
-                prompt,
-                ...(project.sketchUrl && groupNum === 1 ? {
-                  originalImages: [{
-                    url: project.sketchUrl,
-                    mimeType: "image/jpeg"
-                  }]
-                } : {})
+              // Use Replicate API with img2img if reference image exists
+              const result = await generateImageWithReplicate({
+                prompt: fullPrompt,
+                imageUrl: project.sketchUrl || undefined, // Use reference image for ALL groups
               });
               
               if (result.url) {

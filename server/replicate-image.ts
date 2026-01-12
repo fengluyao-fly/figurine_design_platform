@@ -6,7 +6,7 @@
 import Replicate from "replicate";
 import { storagePut } from "./storage";
 
-const REPLICATE_API_KEY = process.env.REPLICATE_API_KEY;
+const REPLICATE_API_KEY = process.env.REPLICATE_API_TOKEN;
 
 export type ReplicateImageOptions = {
   prompt: string;
@@ -21,7 +21,7 @@ export async function generateImageWithReplicate(
   options: ReplicateImageOptions
 ): Promise<ReplicateImageResponse> {
   if (!REPLICATE_API_KEY) {
-    throw new Error("REPLICATE_API_KEY is not configured. Please add it in Settings → Secrets");
+    throw new Error("REPLICATE_API_TOKEN is not configured. Please add it in Settings → Secrets");
   }
 
   const replicate = new Replicate({
@@ -29,20 +29,39 @@ export async function generateImageWithReplicate(
   });
 
   try {
-    // Use FLUX.1 Schnell for fast generation
-    const output = await replicate.run(
-      "black-forest-labs/flux-schnell",
-      {
-        input: {
-          prompt: options.prompt,
-          num_outputs: 1,
-          aspect_ratio: "1:1",
-          output_format: "png",
-          output_quality: 90,
-          ...(options.imageUrl ? { image: options.imageUrl } : {}),
-        },
-      }
-    ) as string[];
+    let output: string[];
+    
+    // If reference image provided, use img2img model with higher fidelity
+    if (options.imageUrl) {
+      output = await replicate.run(
+        "black-forest-labs/flux-dev",
+        {
+          input: {
+            prompt: options.prompt,
+            image: options.imageUrl,
+            num_outputs: 1,
+            aspect_ratio: "1:1",
+            output_format: "png",
+            output_quality: 90,
+            prompt_strength: 0.85, // High strength to closely follow reference image
+          },
+        }
+      ) as string[];
+    } else {
+      // Text-to-image generation
+      output = await replicate.run(
+        "black-forest-labs/flux-schnell",
+        {
+          input: {
+            prompt: options.prompt,
+            num_outputs: 1,
+            aspect_ratio: "1:1",
+            output_format: "png",
+            output_quality: 90,
+          },
+        }
+      ) as string[];
+    }
 
     if (!output || output.length === 0) {
       throw new Error("No image generated from Replicate");
