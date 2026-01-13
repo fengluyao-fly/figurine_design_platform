@@ -169,3 +169,21 @@
   - [x] Error message suggests alternatives: cartoon characters, products, adult portraits
   - [ ] Future: Consider adding pre-upload content check or warnings
   - [ ] Future: Document content policy in user guide
+
+## Fix Four-View System Issues (2026-01-13)
+- [x] Update text descriptions from "9 views" to "12 views" (3 groups × 4 views)
+  - [x] Update homepage description
+  - [x] Update GenerateDesign page description
+  - [x] Check all other places mentioning view count
+
+- [x] Fix image orientation issue (feet pointing wrong direction)
+  - [x] Review and improve Nano Banana Pro prompt for consistent orientation
+  - [x] Ensure all views show head at top, feet at bottom
+  - [x] Added explicit "ALL VIEWS must have consistent upright orientation" to prompts
+
+- [x] Fix 3D model quality issues
+  - [x] Problem: Front and back both show face (should be face/back of head)
+  - [x] Problem: Model is blurry and low quality
+  - [x] Solution: Improve Tripo AI view labeling to clearly distinguish 4 views
+  - [x] Add explicit instructions for front/left/back/right orientation ("FRONT VIEW: face visible", "BACK VIEW: back of head visible", etc.)
+  - [ ] Test 3D model generation with improved labels

@@ -112,7 +112,7 @@ export default function Home() {
               {/* Feature highlights */}
               <div className="grid grid-cols-3 gap-4 pt-4">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-primary">9</div>
+                  <div className="text-3xl font-bold text-primary">12</div>
                   <div className="text-sm text-muted-foreground">Design Views</div>
                 </div>
                 <div className="text-center">
@@ -242,7 +242,7 @@ export default function Home() {
               </div>
               <h3 className="font-semibold">Review</h3>
               <p className="text-sm text-muted-foreground">
-                Get 9 design views instantly, choose your favorite set
+                Get 12 design views instantly, choose your favorite set
               </p>
             </div>
             <div className="text-center space-y-3">

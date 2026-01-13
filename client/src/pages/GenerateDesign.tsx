@@ -200,7 +200,7 @@ export default function GenerateDesign() {
               <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2">Generating Three-View Designs...</h3>
               <p className="text-muted-foreground">
-                Our AI is creating 9 design views (3 groups × 3 views). This may take 30-90 seconds.
+                Our AI is creating 12 design views (3 groups × 4 views). This may take 30-90 seconds.
               </p>
             </CardContent>
           </Card>
@@ -212,7 +212,7 @@ export default function GenerateDesign() {
             <div className="mb-6">
               <h2 className="text-3xl font-bold mb-2">Select Your Favorite Design Group</h2>
               <p className="text-muted-foreground text-lg">
-                We generated 9 views organized in 3 groups. Each group shows front, side, and back views. Select one group to proceed.
+                We generated 12 views organized in 3 groups. Each group shows front, left, back, and right views. Select one group to proceed.
               </p>
             </div>
 
