@@ -97,7 +97,33 @@ export async function generateThreeViews(
         await new Promise(resolve => setTimeout(resolve, waitTime * 1000));
         // Continue to next iteration of while loop
       } else {
-        // Not a rate limit error, throw immediately
+        // Check if it's E005 content moderation error
+        const isE005Error = error.message?.includes("E005") || 
+                           error.message?.includes("flagged as sensitive");
+        
+        if (isE005Error) {
+          // E005 content moderation error
+          console.warn("[Nano Banana] Content moderation warning (E005) detected");
+          console.warn("[Nano Banana] Error message:", error.message);
+          
+          // Check if error object contains output (some Replicate errors include the output)
+          if (error.output || error.prediction?.output) {
+            output = error.output || error.prediction.output;
+            console.warn("[Nano Banana] Output found in error object, proceeding with generation...");
+            break; // Exit retry loop with the output from error
+          }
+          
+          // If no output in error, throw user-friendly error
+          console.error("[Nano Banana] E005 error with no output. This is a legitimate moderation block.");
+          throw new Error(
+            "Content moderation: The reference image or generated content was flagged by our AI safety system. " +
+            "This often happens with photos of children or sensitive subjects. " +
+            "Please try using a different reference image (e.g., cartoon character, product photo, or adult portrait). " +
+            "If you believe this is an error, please contact support."
+          );
+        }
+        
+        // Other errors or E005 without output, throw immediately
         throw error;
       }
     }

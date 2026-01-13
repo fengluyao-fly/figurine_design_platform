@@ -160,3 +160,12 @@
   - [x] Updated Tripo AI integration to use all 4 views (no longer omitting right view)
   - [x] Updated frontend UI to display 4 views per group (12 images total: 3 groups × 4 views)
   - [x] Database schema already supports variable-length arrays, no changes needed
+
+## Fix Replicate Content Moderation Error (2026-01-13)
+- [x] Handle Replicate API E005 error (content flagged as sensitive)
+  - [x] Investigated: Triggered by children's photos, human portraits, sensitive subjects
+  - [x] Added logic to check if output exists despite E005 error (false positives)
+  - [x] Added user-friendly error message with guidance on acceptable images
+  - [x] Error message suggests alternatives: cartoon characters, products, adult portraits
+  - [ ] Future: Consider adding pre-upload content check or warnings
+  - [ ] Future: Document content policy in user guide
