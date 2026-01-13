@@ -187,3 +187,17 @@
   - [x] Solution: Improve Tripo AI view labeling to clearly distinguish 4 views
   - [x] Add explicit instructions for front/left/back/right orientation ("FRONT VIEW: face visible", "BACK VIEW: back of head visible", etc.)
   - [ ] Test 3D model generation with improved labels
+
+## Remaining Issues with Four-View System (2026-01-13)
+
+- [x] **问题1**: 左/右视图方向仍然错误
+  - 左视图和右视图中，脚和头的方向相反（应该都是头朝上、脚朝下）
+  - 已添加更强制性的prompt要求："CRITICAL ORIENTATION RULE: ALL FOUR VIEWS MUST MAINTAIN IDENTICAL VERTICAL ALIGNMENT"
+  - 明确说明视图只在水平旋转角度不同（0°, 90°, 180°, 270°），垂直方向必须一致
+
+- [x] **问题2**: 3D模型细节不够清晰
+  - 头发、衣服等细节不够逼真
+  - 已实现自动纹理增强：在3D模型生成完成后，自动调用Tripo AI的texture_model API
+  - 使用v3.0模型版本 + texture_quality="detailed" 生成4K高清纹理
+  - 显著提升头发、衣服、皮肤等细节的逼真度
+  - 如果纹理增强失败，自动回退到原始模型（确保稳定性）

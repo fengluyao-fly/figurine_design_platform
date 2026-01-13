@@ -91,6 +91,44 @@ export async function getTaskStatus(taskId: string): Promise<TripoTaskStatus["da
 }
 
 /**
+ * Apply high-quality texture to an existing 3D model
+ * @param originalTaskId Task ID of the original 3D model
+ * @returns New task ID for texture enhancement
+ */
+export async function applyDetailedTexture(originalTaskId: string): Promise<string> {
+  if (!TRIPO_API_KEY) {
+    throw new Error("TRIPO_API_KEY is not configured");
+  }
+
+  console.log("[Tripo] Applying detailed texture to model:", originalTaskId);
+
+  const response = await axios.post<TripoTaskResponse>(
+    `${TRIPO_API_BASE}/task`,
+    {
+      type: "texture_model",
+      original_model_task_id: originalTaskId,
+      model_version: "v3.0-20250812",
+      texture_quality: "detailed",
+      texture: true,
+      pbr: true,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${TRIPO_API_KEY}`,
+      },
+    }
+  );
+
+  if (response.data.code !== 0) {
+    throw new Error(`Tripo API error: ${response.data}`);
+  }
+
+  console.log("[Tripo] Detailed texture task created:", response.data.data.task_id);
+  return response.data.data.task_id;
+}
+
+/**
  * Poll task until completion (with timeout)
  * @param taskId Task ID to poll
  * @param maxWaitSeconds Maximum time to wait (default 300s = 5min)

@@ -6,7 +6,7 @@ import { z } from "zod";
 import { createProject, getProjectById, getProjectsBySession, updateProjectStatus, createOrder, getOrderByProject, createGeneration, getGenerationsByProject, markGenerationAsSelected, create3DModelGeneration, update3DModelGeneration, get3DModelByProject, getDb } from "./db";
 import { generations } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
-import { createMultiviewTo3DTask, waitForTaskCompletion } from "./tripo";
+import { createMultiviewTo3DTask, waitForTaskCompletion, applyDetailedTexture } from "./tripo";
 import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
 import { generateImageWithReplicate } from "./replicate-image.js";
@@ -290,11 +290,61 @@ export const appRouter = router({
               
               console.log('[3D Model] GLB uploaded to S3:', glbUrl);
               
-              await update3DModelGeneration(modelGenId, {
-                status: "completed",
-                modelUrl: glbUrl,
-                modelKey: glbKey,
-              });
+              // Apply detailed texture for better quality (hair, clothing, etc.)
+              console.log('[3D Model] Applying detailed texture enhancement...');
+              try {
+                const textureTaskId = await applyDetailedTexture(taskId);
+                console.log('[3D Model] Texture enhancement task created:', textureTaskId);
+                
+                // Wait for texture enhancement to complete
+                const textureResult = await waitForTaskCompletion(textureTaskId, 600);
+                
+                if (textureResult.output?.pbr_model) {
+                  console.log('[3D Model] Enhanced texture completed, downloading...');
+                  
+                  // Download enhanced GLB
+                  const enhancedGlbResponse = await fetch(textureResult.output.pbr_model);
+                  if (enhancedGlbResponse.ok) {
+                    const enhancedGlbBuffer = Buffer.from(await enhancedGlbResponse.arrayBuffer());
+                    
+                    // Upload enhanced GLB to S3 (overwrite)
+                    const { url: enhancedGlbUrl } = await storagePut(glbKey, enhancedGlbBuffer, 'model/gltf-binary');
+                    
+                    console.log('[3D Model] Enhanced GLB uploaded:', enhancedGlbUrl);
+                    
+                    await update3DModelGeneration(modelGenId, {
+                      status: "completed",
+                      modelUrl: enhancedGlbUrl,
+                      modelKey: glbKey,
+                    });
+                  } else {
+                    // Fallback to original if enhanced download fails
+                    console.warn('[3D Model] Enhanced GLB download failed, using original');
+                    await update3DModelGeneration(modelGenId, {
+                      status: "completed",
+                      modelUrl: glbUrl,
+                      modelKey: glbKey,
+                    });
+                  }
+                } else {
+                  // Fallback to original if no enhanced model
+                  console.warn('[3D Model] No enhanced model in output, using original');
+                  await update3DModelGeneration(modelGenId, {
+                    status: "completed",
+                    modelUrl: glbUrl,
+                    modelKey: glbKey,
+                  });
+                }
+              } catch (textureError) {
+                // Fallback to original if texture enhancement fails
+                console.error('[3D Model] Texture enhancement failed:', textureError);
+                console.log('[3D Model] Using original model without enhancement');
+                await update3DModelGeneration(modelGenId, {
+                  status: "completed",
+                  modelUrl: glbUrl,
+                  modelKey: glbKey,
+                });
+              }
               
               console.log('[3D Model] Database updated successfully');
             } else {
