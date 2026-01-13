@@ -18,6 +18,7 @@ export default function GenerateDesign() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [editPrompt, setEditPrompt] = useState("");
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState<{ url: string; title: string } | null>(null);
 
   const { data: project, isLoading: projectLoading } = trpc.projects.getById.useQuery({ id: projectId });
   const { data: generations, refetch: refetchGenerations } = trpc.generations.getByProject.useQuery({ projectId });
@@ -233,14 +234,29 @@ export default function GenerateDesign() {
                     </CardHeader>
                     <CardContent className="space-y-3">
                       {imageUrls.map((url: string, idx: number) => (
-                        <div key={idx} className="relative aspect-video bg-muted rounded-lg overflow-hidden">
+                        <div 
+                          key={idx} 
+                          className="relative aspect-video bg-muted rounded-lg overflow-hidden group cursor-zoom-in"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setLightboxImage({ 
+                              url, 
+                              title: `Group ${groupNumber} - ${["Front", "Side", "Back"][idx]} View` 
+                            });
+                          }}
+                        >
                           <img
                             src={url}
                             alt={`Group ${groupNumber} - View ${idx + 1}`}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover transition-transform group-hover:scale-105"
                           />
                           <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
                             {["Front", "Side", "Back"][idx]} View
+                          </div>
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 text-black text-xs px-3 py-1.5 rounded-full font-medium">
+                              Click to enlarge
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -330,6 +346,29 @@ export default function GenerateDesign() {
           </>
         )}
       </div>
+
+      {/* Image Lightbox */}
+      <Dialog open={!!lightboxImage} onOpenChange={() => setLightboxImage(null)}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 overflow-hidden">
+          <div className="relative w-full h-full flex items-center justify-center bg-black">
+            {lightboxImage && (
+              <>
+                <DialogHeader className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black/80 to-transparent p-6">
+                  <DialogTitle className="text-white text-xl">{lightboxImage.title}</DialogTitle>
+                  <DialogDescription className="text-gray-300">
+                    Click outside to close
+                  </DialogDescription>
+                </DialogHeader>
+                <img
+                  src={lightboxImage.url}
+                  alt={lightboxImage.title}
+                  className="max-w-full max-h-[90vh] object-contain"
+                />
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

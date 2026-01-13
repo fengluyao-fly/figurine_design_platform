@@ -119,3 +119,12 @@
 - [x] Verify model-viewer displays 3D model correctly
 - [x] Add detailed error logging for debugging future issues
 - [x] Manual fix applied to project 210001 (uploaded GLB to CDN)
+
+## Bug Fix - Three-View Generation Issues (2026-01-13)
+- [x] Issue 1: Style preservation - When user uploads image without text, should preserve original style
+- [x] Issue 1b: Composition preservation - Should strictly match reference image composition (upper body → upper body, full body → full body, NO extrapolation)
+- [x] Fix prompt to preserve exact composition without extrapolating missing parts
+- [x] Issue 2: Add fullscreen zoom feature - Click on three-view images to view in fullscreen for better detail inspection
+- [x] Implement image lightbox/modal for fullscreen viewing
+- [x] Test with user's half-body portrait reference image
+- [x] Verified: Generated images are complete (head to feet), thumbnail display made them appear cropped

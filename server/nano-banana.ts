@@ -28,9 +28,21 @@ export async function generateThreeViews(
   const { prompt, imageUrl, resolution = "2K" } = options;
 
   // Construct prompt for three-view generation
-  const threeViewPrompt = imageUrl
-    ? `Product design sheet showing three orthographic views of: ${prompt}. Layout: front view on left, side view in center, back view on right. White background, professional product photography, studio lighting, clean separation between views, technical drawing style.`
-    : `Product design sheet, ${prompt}, three orthographic views: front view, side view, back view, arranged horizontally, white background, professional product photography, studio lighting, technical drawing style, clean layout.`;
+  let threeViewPrompt: string;
+  
+  if (imageUrl) {
+    // If user provided an image
+    if (prompt && prompt.trim()) {
+      // User provided both image and text: modify the image according to text
+      threeViewPrompt = `Product design sheet showing three orthographic views of: ${prompt}. Layout: front view on left, side view in center, back view on right. Show the COMPLETE FULL BODY from head to toe, do not crop any part. White background, professional product photography, studio lighting, clean separation between views.`;
+    } else {
+      // User provided only image, no text: strictly preserve original style and composition
+      threeViewPrompt = `Create a product design sheet with three orthographic views (front, side, back) of this subject. CRITICAL REQUIREMENTS: 1) Preserve the EXACT composition and framing of the reference image - if it shows upper body, generate upper body views; if it shows full body, generate full body views. DO NOT extrapolate or add missing parts. 2) Maintain the exact style, colors, clothing, pose, and all visual characteristics from the reference image. 3) Layout: front view on left, side view in center, back view on right. 4) White background, clean separation between views. 5) Match the reference image's level of detail and cropping exactly.`;
+    }
+  } else {
+    // Text-only input (no image)
+    threeViewPrompt = `Product design sheet, ${prompt}, three orthographic views: front view, side view, back view, arranged horizontally. Show the COMPLETE FULL BODY from head to toe. White background, professional product photography, studio lighting, technical drawing style, clean layout.`;
+  }
 
   console.log("[Nano Banana] Generating three-view sheet...");
   console.log("[Nano Banana] Prompt:", threeViewPrompt);
