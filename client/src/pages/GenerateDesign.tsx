@@ -256,7 +256,7 @@ export default function GenerateDesign() {
                             e.stopPropagation();
                             setLightboxImage({ 
                               url, 
-                              title: `Group ${groupNumber} - ${["Front", "Side", "Back"][idx]} View` 
+                              title: `Group ${groupNumber} - ${["Front", "Left", "Back", "Right"][idx]} View` 
                             });
                           }}
                         >
@@ -266,7 +266,7 @@ export default function GenerateDesign() {
                             className="w-full h-full object-contain transition-transform group-hover:scale-105"
                           />
                           <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                            {["Front", "Side", "Back"][idx]} View
+                            {["Front", "Left", "Back", "Right"][idx]} View
                           </div>
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
                             <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 text-black text-xs px-3 py-1.5 rounded-full font-medium">

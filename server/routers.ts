@@ -125,11 +125,12 @@ export const appRouter = router({
               resolution: "2K",
             });
             
-            // Save generation to database with 3 separate image URLs
+            // Save generation to database with 4 separate image URLs
             const imageUrls = [
               threeViews.frontView,
-              threeViews.sideView,
+              threeViews.leftView,
               threeViews.backView,
+              threeViews.rightView,
             ];
             
             await createGeneration({
@@ -200,8 +201,9 @@ export const appRouter = router({
         
         const imageUrls = [
           threeViews.frontView,
-          threeViews.sideView,
+          threeViews.leftView,
           threeViews.backView,
+          threeViews.rightView,
         ];
         
         // Find and update the existing generation for this group

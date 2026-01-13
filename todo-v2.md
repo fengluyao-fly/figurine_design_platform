@@ -151,3 +151,12 @@
 - [x] Issue 4: 3D model quality is blurry
   - [x] Increased face_limit from 10,000 to 50,000 polygons
   - [x] Should significantly improve model detail and quality
+
+## Improve 3D Model Accuracy with 4-View Generation (2026-01-13)
+- [x] Increase from 3 views to 4 views (front, left, back, right) for better 3D reconstruction
+  - [x] Confirmed Nano Banana Pro supports 4-view generation with custom prompts
+  - [x] Modified prompts to generate 4 orthographic views (front, left, back, right) in horizontal layout
+  - [x] Updated image splitting logic from 3-way to 4-way split
+  - [x] Updated Tripo AI integration to use all 4 views (no longer omitting right view)
+  - [x] Updated frontend UI to display 4 views per group (12 images total: 3 groups × 4 views)
+  - [x] Database schema already supports variable-length arrays, no changes needed

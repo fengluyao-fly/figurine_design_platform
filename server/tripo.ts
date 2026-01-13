@@ -31,16 +31,16 @@ interface TripoTaskStatus {
  * @returns Task ID for polling
  */
 export async function createMultiviewTo3DTask(imageUrls: string[]): Promise<string> {
-  if (imageUrls.length !== 3) {
-    throw new Error("Multiview generation requires exactly 3 images (front, side, back)");
+  if (imageUrls.length !== 4) {
+    throw new Error("Multiview generation requires exactly 4 images (front, left, back, right)");
   }
 
-  // For 3-image input, we'll use front, side, back and omit right
+  // Use all 4 views for better 3D reconstruction accuracy
   const files = [
     { type: "jpg", url: imageUrls[0] }, // front
-    { type: "jpg", url: imageUrls[1] }, // left (side)
+    { type: "jpg", url: imageUrls[1] }, // left
     { type: "jpg", url: imageUrls[2] }, // back
-    {}, // right (omitted)
+    { type: "jpg", url: imageUrls[3] }, // right
   ];
 
   const response = await axios.post<TripoTaskResponse>(

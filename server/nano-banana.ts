@@ -12,19 +12,20 @@ export interface NanoBananaOptions {
   resolution?: "1K" | "2K" | "4K";
 }
 
-export interface ThreeViewResult {
+export interface FourViewResult {
   frontView: string;
-  sideView: string;
+  leftView: string;
   backView: string;
+  rightView: string;
 }
 
 /**
- * Generate a three-view product design sheet using Nano Banana Pro
- * Returns URLs to 3 separate images (front, side, back views)
+ * Generate a four-view product design sheet using Nano Banana Pro
+ * Returns URLs to 4 separate images (front, left, back, right views)
  */
 export async function generateThreeViews(
   options: NanoBananaOptions
-): Promise<ThreeViewResult> {
+): Promise<FourViewResult> {
   const { prompt, imageUrl, resolution = "2K" } = options;
 
   // Construct prompt for three-view generation
@@ -34,14 +35,14 @@ export async function generateThreeViews(
     // If user provided an image
     if (prompt && prompt.trim()) {
       // User provided both image and text: modify the image according to text
-      threeViewPrompt = `Product design sheet showing three orthographic views of: ${prompt}. Layout: front view on left, side view in center, back view on right. Show the COMPLETE FULL BODY from head to toe, do not crop any part. White background, professional product photography, studio lighting, clean separation between views.`;
+      threeViewPrompt = `Product design sheet showing four orthographic views of: ${prompt}. Layout: front view, left side view, back view, right side view, arranged horizontally from left to right. Show the COMPLETE FULL BODY from head to toe, do not crop any part. White background, professional product photography, studio lighting, clean separation between views.`;
     } else {
       // User provided only image, no text: strictly preserve original style and composition
-      threeViewPrompt = `Create a product design sheet with three orthographic views (front, side, back) of this subject. CRITICAL: Match the EXACT CROPPING of the reference image. If the reference shows only head and upper body (no legs, no feet), then ALL THREE VIEWS must show only head and upper body - DO NOT add legs or feet. If the reference shows full body, then show full body. NEVER extrapolate or invent body parts not visible in the reference. Preserve exact style, colors, clothing, and pose. Layout: front view on left, side view in center, back view on right. White background, clean separation.`;
+      threeViewPrompt = `Create a product design sheet with four orthographic views (front, left side, back, right side) of this subject. CRITICAL: Match the EXACT CROPPING of the reference image. If the reference shows only head and upper body (no legs, no feet), then ALL FOUR VIEWS must show only head and upper body - DO NOT add legs or feet. If the reference shows full body, then show full body. NEVER extrapolate or invent body parts not visible in the reference. Preserve exact style, colors, clothing, and pose. Layout: front view, left side view, back view, right side view, arranged horizontally from left to right. White background, clean separation.`;
     }
   } else {
     // Text-only input (no image)
-    threeViewPrompt = `Product design sheet, ${prompt}, three orthographic views: front view, side view, back view, arranged horizontally. Show the COMPLETE FULL BODY from head to toe. White background, professional product photography, studio lighting, technical drawing style, clean layout.`;
+    threeViewPrompt = `Product design sheet, ${prompt}, four orthographic views: front view, left side view, back view, right side view, arranged horizontally from left to right. Show the COMPLETE FULL BODY from head to toe. White background, professional product photography, studio lighting, technical drawing style, clean layout.`;
   }
 
   console.log("[Nano Banana] Generating three-view sheet...");
@@ -173,58 +174,69 @@ export async function generateThreeViews(
     throw new Error("Failed to download image: imageBuffer is undefined");
   }
 
-  // Split the image into 3 equal parts (left, center, right)
+  // Split the image into 4 equal parts (front, left, back, right)
   const metadata = await sharp(imageBuffer).metadata();
   const width = metadata.width!;
   const height = metadata.height!;
-  const viewWidth = Math.floor(width / 3);
+  const viewWidth = Math.floor(width / 4);
 
-  console.log("[Nano Banana] Splitting image:", { width, height, viewWidth });
+  console.log("[Nano Banana] Splitting image into 4 views:", { width, height, viewWidth });
 
-  // Extract front view (left third)
+  // Extract front view (first quarter)
   const frontBuffer = await sharp(imageBuffer)
     .extract({ left: 0, top: 0, width: viewWidth, height })
     .toBuffer();
 
-  // Extract side view (middle third)
-  const sideBuffer = await sharp(imageBuffer)
+  // Extract left side view (second quarter)
+  const leftBuffer = await sharp(imageBuffer)
     .extract({ left: viewWidth, top: 0, width: viewWidth, height })
     .toBuffer();
 
-  // Extract back view (right third)
+  // Extract back view (third quarter)
   const backBuffer = await sharp(imageBuffer)
     .extract({ left: viewWidth * 2, top: 0, width: viewWidth, height })
     .toBuffer();
 
-  // Upload all 3 views to S3
+  // Extract right side view (fourth quarter)
+  const rightBuffer = await sharp(imageBuffer)
+    .extract({ left: viewWidth * 3, top: 0, width: viewWidth, height })
+    .toBuffer();
+
+  // Upload all 4 views to S3
   const timestamp = Date.now();
   const randomSuffix = Math.random().toString(36).substring(7);
 
-  console.log("[Nano Banana] Uploading split views to S3...");
+  console.log("[Nano Banana] Uploading 4 split views to S3...");
 
-  const [frontResult, sideResult, backResult] = await Promise.all([
+  const [frontResult, leftResult, backResult, rightResult] = await Promise.all([
     storagePut(
-      `three-views/${timestamp}-${randomSuffix}-front.png`,
+      `four-views/${timestamp}-${randomSuffix}-front.png`,
       frontBuffer,
       "image/png"
     ),
     storagePut(
-      `three-views/${timestamp}-${randomSuffix}-side.png`,
-      sideBuffer,
+      `four-views/${timestamp}-${randomSuffix}-left.png`,
+      leftBuffer,
       "image/png"
     ),
     storagePut(
-      `three-views/${timestamp}-${randomSuffix}-back.png`,
+      `four-views/${timestamp}-${randomSuffix}-back.png`,
       backBuffer,
+      "image/png"
+    ),
+    storagePut(
+      `four-views/${timestamp}-${randomSuffix}-right.png`,
+      rightBuffer,
       "image/png"
     ),
   ]);
 
-  console.log("[Nano Banana] Three views generated and uploaded successfully");
+  console.log("[Nano Banana] Four views generated and uploaded successfully");
 
   return {
     frontView: frontResult.url,
-    sideView: sideResult.url,
+    leftView: leftResult.url,
     backView: backResult.url,
+    rightView: rightResult.url,
   };
 }
