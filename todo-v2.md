@@ -90,3 +90,23 @@
 - [x] Max 3 retries with 5-second delay between attempts
 - [x] Successfully tested with Nano Banana Pro generated images
 - [x] All images uploaded to S3/CloudFront successfully
+
+## Nano Banana Pro Main Flow Integration
+- [x] Update generateImages mutation to use Nano Banana Pro
+- [x] Generate 3 groups (9 images total) instead of current logic
+- [x] Test with text-only input
+- [ ] Test with image+text input (img2img mode)
+- [ ] Test with user's example: "Make the whole body of this 3 year old boy. Wearing white socks in black sneakers."
+- [x] Verify all 9 images are correctly displayed in the UI
+- [x] Test complete flow: input → 9 images → select group → 3D model
+
+## End-to-End Testing Results (2026-01-13)
+- [x] Text-only input: "A cute cartoon robot toy with round head, big eyes, and friendly smile"
+- [x] Successfully generated 3 groups with distinct styles (technical, 3D rendered, colorful cartoon)
+- [x] All 9 images displayed correctly in 3-column layout
+- [x] Group selection working with visual feedback (purple border, "Selected" badge)
+- [x] 3D model generation from selected group (Group 3) successful
+- [x] 3D model viewer loading and displaying GLB file
+- [x] Download GLB button functional
+- [x] Order submission form complete
+- [x] Total user journey time: ~5 minutes (within expected 3-6 minute range)
