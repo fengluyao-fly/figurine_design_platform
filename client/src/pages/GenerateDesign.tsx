@@ -248,7 +248,7 @@ export default function GenerateDesign() {
                           <img
                             src={url}
                             alt={`Group ${groupNumber} - View ${idx + 1}`}
-                            className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                            className="w-full h-full object-contain transition-transform group-hover:scale-105"
                           />
                           <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
                             {["Front", "Side", "Back"][idx]} View

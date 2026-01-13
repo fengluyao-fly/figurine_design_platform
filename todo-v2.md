@@ -128,3 +128,9 @@
 - [x] Implement image lightbox/modal for fullscreen viewing
 - [x] Test with user's half-body portrait reference image
 - [x] Verified: Generated images are complete (head to feet), thumbnail display made them appear cropped
+
+## UI Improvement - Three-View Thumbnail Display (2026-01-13)
+- [x] Change thumbnail style from object-cover to object-contain
+- [x] Ensure complete image display without cropping in thumbnail view
+- [x] Test with various image aspect ratios
+- [x] Verified: All three-view thumbnails now display complete images from head to feet
