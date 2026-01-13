@@ -51,7 +51,7 @@ export async function createMultiviewTo3DTask(imageUrls: string[]): Promise<stri
       model_version: "v2.5-20250123",
       texture: true,
       pbr: true,
-      face_limit: 10000,
+      face_limit: 50000, // Increased from 10k to 50k for better quality
     },
     {
       headers: {

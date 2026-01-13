@@ -34,6 +34,18 @@ export default function GenerateDesign() {
       setIsGenerating(false);
     },
   });
+  
+  const editGroupMutation = trpc.generations.editSelectedGroup.useMutation({
+    onSuccess: () => {
+      toast.success("Design updated successfully!");
+      refetchGenerations();
+      setIsEditDialogOpen(false);
+      setEditPrompt("");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to update design");
+    },
+  });
 
   const selectGroupMutation = trpc.generations.selectGroup.useMutation({
     onSuccess: () => {
@@ -72,9 +84,12 @@ export default function GenerateDesign() {
       return;
     }
     
-    // TODO: Implement edit generation (only 1 group)
-    toast.info("Text-based editing will be implemented with Replicate API");
-    setIsEditDialogOpen(false);
+    // Edit only the selected group (generate 1 new set of 3 views)
+    editGroupMutation.mutate({
+      projectId,
+      groupNumber: selectedGroup,
+      editPrompt: editPrompt.trim(),
+    });
   };
 
   const handleGenerate3D = () => {
@@ -321,28 +336,7 @@ export default function GenerateDesign() {
               </Card>
             )}
 
-            {/* Regenerate Option */}
-            <Card className="border-2 border-border/50">
-              <CardContent className="py-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-1">Not satisfied with these designs?</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Generate a completely new set of 9 design views
-                    </p>
-                  </div>
-                  <Button
-                    onClick={handleGenerate}
-                    disabled={isGenerating}
-                    variant="outline"
-                    size="lg"
-                  >
-                    <Sparkles className="mr-2 h-5 w-5" />
-                    Generate New Set
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+
           </>
         )}
       </div>

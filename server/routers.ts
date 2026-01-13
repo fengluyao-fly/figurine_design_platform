@@ -3,7 +3,9 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { z } from "zod";
-import { createProject, getProjectById, getProjectsBySession, updateProjectStatus, createOrder, getOrderByProject, createGeneration, getGenerationsByProject, markGenerationAsSelected, create3DModelGeneration, update3DModelGeneration, get3DModelByProject } from "./db";
+import { createProject, getProjectById, getProjectsBySession, updateProjectStatus, createOrder, getOrderByProject, createGeneration, getGenerationsByProject, markGenerationAsSelected, create3DModelGeneration, update3DModelGeneration, get3DModelByProject, getDb } from "./db";
+import { generations } from "../drizzle/schema";
+import { eq } from "drizzle-orm";
 import { createMultiviewTo3DTask, waitForTaskCompletion } from "./tripo";
 import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
@@ -98,11 +100,13 @@ export const appRouter = router({
         // Update project status
         await updateProjectStatus(input.projectId, "generating");
         
-        // Generate 3 groups of three-view images
+        // Generate 3 groups of three-view images IN PARALLEL for faster generation
         const groups = [];
         
-        // Generate 3 different design variations using Nano Banana Pro
-        for (let groupNum = 1; groupNum <= 3; groupNum++) {
+        console.log('[Generations] Starting parallel generation of 3 groups...');
+        
+        // Generate 3 different design variations using Nano Banana Pro - PARALLEL
+        const groupPromises = [1, 2, 3].map(async (groupNum) => {
           // Build prompt for three-view generation
           let basePrompt = project.description && project.description.trim()
             ? project.description
@@ -141,18 +145,24 @@ export const appRouter = router({
               }),
             });
             
-            groups.push({ 
+            console.log(`[Generations] Group ${groupNum} completed with 3 views`);
+            
+            return { 
               groupNumber: groupNum, 
               imageUrls,
-            });
-            
-            console.log(`[Generations] Group ${groupNum} completed with 3 views`);
+            };
             
           } catch (error) {
             console.error(`Failed to generate three-view for group ${groupNum}:`, error);
             throw new Error(`Image generation failed for design variation ${groupNum}`);
           }
-        }
+        });
+        
+        // Wait for all 3 groups to complete in parallel
+        const results = await Promise.all(groupPromises);
+        groups.push(...results);
+        
+        console.log('[Generations] All 3 groups completed!');
         
         // Update project status to completed
         await updateProjectStatus(input.projectId, "completed");
@@ -164,6 +174,63 @@ export const appRouter = router({
       .input(z.object({ projectId: z.number() }))
       .query(async ({ input }) => {
         return await getGenerationsByProject(input.projectId);
+      }),
+    
+    editSelectedGroup: publicProcedure
+      .input(z.object({ 
+        projectId: z.number(),
+        groupNumber: z.number(),
+        editPrompt: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        // Get project info
+        const project = await getProjectById(input.projectId);
+        if (!project) {
+          throw new Error("Project not found");
+        }
+        
+        console.log(`[Generations] Editing group ${input.groupNumber} with prompt: ${input.editPrompt}`);
+        
+        // Generate new three-view for this group only
+        const threeViews = await generateThreeViews({
+          prompt: input.editPrompt,
+          imageUrl: project.sketchUrl || undefined,
+          resolution: "2K",
+        });
+        
+        const imageUrls = [
+          threeViews.frontView,
+          threeViews.sideView,
+          threeViews.backView,
+        ];
+        
+        // Find and update the existing generation for this group
+        const existingGenerations = await getGenerationsByProject(input.projectId);
+        const targetGeneration = existingGenerations.find(
+          g => g.groupNumber === input.groupNumber && g.type === "three_view"
+        );
+        
+        if (targetGeneration) {
+          // Update existing generation
+          const db = await getDb();
+          if (db) {
+            await db.update(generations)
+              .set({
+                assetUrls: JSON.stringify(imageUrls),
+                assetKeys: JSON.stringify(imageUrls.map(url => url.split('/').pop() || '')),
+                metadata: JSON.stringify({ 
+                  description: project.description,
+                  prompt: input.editPrompt,
+                  edited: true,
+                }),
+              })
+              .where(eq(generations.id, targetGeneration.id));
+          }
+        }
+        
+        console.log(`[Generations] Group ${input.groupNumber} updated with new images`);
+        
+        return { success: true, imageUrls };
       }),
     
     selectGroup: publicProcedure

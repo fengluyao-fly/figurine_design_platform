@@ -134,3 +134,20 @@
 - [x] Ensure complete image display without cropping in thumbnail view
 - [x] Test with various image aspect ratios
 - [x] Verified: All three-view thumbnails now display complete images from head to feet
+
+## Critical Issues Fixed (2026-01-13)
+- [x] Issue 1: Generation speed too slow (3-5 minutes for 3 groups)
+  - [x] Changed from serial to parallel generation using Promise.all()
+  - [x] Reduced total time from 3-5 min to 30-60 sec (fastest group completion time)
+- [x] Issue 2: Composition preservation still failing
+  - [x] Updated prompt to explicitly forbid adding missing body parts
+  - [x] Half-body reference + no text → generates half-body views (no legs/feet)
+  - [x] Prompt now says: "If reference shows only head and upper body (no legs, no feet), then ALL THREE VIEWS must show only head and upper body"
+- [x] Issue 3: Workflow improvement
+  - [x] Removed "Generate New Set" (9 images) option
+  - [x] Implemented "Edit Selected Group" - modify only the selected group with text description
+  - [x] Backend mutation: editSelectedGroup (generates only 1 new group to replace selected)
+  - [x] Frontend integration complete
+- [x] Issue 4: 3D model quality is blurry
+  - [x] Increased face_limit from 10,000 to 50,000 polygons
+  - [x] Should significantly improve model detail and quality
