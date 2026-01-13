@@ -110,3 +110,12 @@
 - [x] Download GLB button functional
 - [x] Order submission form complete
 - [x] Total user journey time: ~5 minutes (within expected 3-6 minute range)
+
+## Bug Fix - CORS Error Loading GLB Files (2026-01-13)
+- [x] Investigate CORS error: model-viewer cannot load GLB from Tripo AI URLs
+- [x] Solution: Download GLB file and upload to S3/CloudFront (bypass CORS)
+- [x] Update 3D model generation to store GLB in S3 instead of using Tripo URL directly
+- [x] Test GLB loading from CloudFront URL
+- [x] Verify model-viewer displays 3D model correctly
+- [x] Add detailed error logging for debugging future issues
+- [x] Manual fix applied to project 210001 (uploaded GLB to CDN)

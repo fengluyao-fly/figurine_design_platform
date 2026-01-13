@@ -197,15 +197,48 @@ export const appRouter = router({
         
         // Start async polling (don't await - let it run in background)
         waitForTaskCompletion(taskId, 600).then(async (result) => {
-          if (result.output?.pbr_model) {
-            await update3DModelGeneration(modelGenId, {
-              status: "completed",
-              modelUrl: result.output.pbr_model,
-              modelKey: result.output.pbr_model.split('/').pop() || '',
-            });
+          try {
+            if (result.output?.pbr_model) {
+              console.log('[3D Model] Task completed, downloading GLB file from Tripo AI...');
+              console.log('[3D Model] GLB URL:', result.output.pbr_model);
+              
+              // Download GLB file from Tripo AI
+              const glbResponse = await fetch(result.output.pbr_model);
+              if (!glbResponse.ok) {
+                throw new Error(`Failed to download GLB: ${glbResponse.status} ${glbResponse.statusText}`);
+              }
+              const glbBuffer = Buffer.from(await glbResponse.arrayBuffer());
+              
+              console.log('[3D Model] GLB file downloaded, size:', glbBuffer.length, 'bytes');
+              
+              // Upload to S3
+              const timestamp = Date.now();
+              const randomStr = Math.random().toString(36).substring(2, 8);
+              const glbKey = `3d-models/${timestamp}-${randomStr}.glb`;
+              
+              console.log('[3D Model] Uploading to S3 with key:', glbKey);
+              const { url: glbUrl } = await storagePut(glbKey, glbBuffer, 'model/gltf-binary');
+              
+              console.log('[3D Model] GLB uploaded to S3:', glbUrl);
+              
+              await update3DModelGeneration(modelGenId, {
+                status: "completed",
+                modelUrl: glbUrl,
+                modelKey: glbKey,
+              });
+              
+              console.log('[3D Model] Database updated successfully');
+            } else {
+              throw new Error('No pbr_model in result.output');
+            }
+          } catch (error) {
+            console.error('[3D Model] Error in processing:', error);
+            console.error('[3D Model] Error stack:', error instanceof Error ? error.stack : 'No stack');
+            throw error;
           }
         }).catch(async (error) => {
-          console.error("3D generation failed:", error);
+          console.error("[3D Model] 3D generation failed:", error);
+          console.error("[3D Model] Error details:", error instanceof Error ? error.message : String(error));
           await update3DModelGeneration(modelGenId, {
             status: "failed",
           });
