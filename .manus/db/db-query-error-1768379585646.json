@@ -1,0 +1,8 @@
+{
+  "query": "SELECT p.id, p.status, g.id as gen_id, g.variation_group, g.front_view_url, g.left_view_url, g.back_view_url, g.right_view_url, g.created_at \nFROM projects p \nLEFT JOIN generations g ON p.id = g.project_id \nORDER BY g.created_at DESC \nLIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 31pJVL3gZeDmKMR.root --database MMPeiPEYV4xzt6Po2BN4fh --execute SELECT p.id, p.status, g.id as gen_id, g.variation_group, g.front_view_url, g.left_view_url, g.back_view_url, g.right_view_url, g.created_at \nFROM projects p \nLEFT JOIN generations g ON p.id = g.project_id \nORDER BY g.created_at DESC \nLIMIT 10;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'g.project_id' in 'on clause'"
+  ]
+}

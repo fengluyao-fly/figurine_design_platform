@@ -317,14 +317,17 @@ export const appRouter = router({
             console.log('[3D Model] Output object:', JSON.stringify(result.output, null, 2));
             console.log('[3D Model] Output keys:', result.output ? Object.keys(result.output) : 'output is null/undefined');
             
-            // Initial multiview_to_3d task returns 'model', not 'pbr_model'
-            const initialModelUrl = result.output?.model;
+            // Tripo API returns 'pbr_model' for multiview_to_model with pbr=true
+            // Fall back to 'model' if pbr_model is not available
+            const initialModelUrl = result.output?.pbr_model || result.output?.model;
             console.log('[3D Model] Extracted model URL:', initialModelUrl);
+            console.log('[3D Model] pbr_model:', result.output?.pbr_model);
+            console.log('[3D Model] model:', result.output?.model);
             
             if (!initialModelUrl) {
               console.error('[3D Model] ERROR: No model URL found in result.output');
               console.error('[3D Model] result.output content:', result.output);
-              throw new Error('No model URL in result.output');
+              throw new Error('No model URL in result.output - neither pbr_model nor model field found');
             }
             
             console.log('[3D Model] Initial task completed, downloading GLB file from Tripo AI...');
@@ -361,8 +364,8 @@ export const appRouter = router({
               // DEBUG: Log complete texture result
               const debugLog = `\n=== TEXTURE ENHANCEMENT DEBUG ===\nTimestamp: ${new Date().toISOString()}\nProject ID: ${input.projectId}\nOriginal Task ID: ${taskId}\nTexture Task ID: ${textureTaskId}\n\nFull Result:\n${JSON.stringify(textureResult, null, 2)}\n\nStatus: ${textureResult.status}\nOutput: ${JSON.stringify(textureResult.output, null, 2)}\nHas pbr_model: ${!!textureResult.output?.pbr_model}\nHas model: ${!!textureResult.output?.model}\nHas base_model: ${!!textureResult.output?.base_model}\n=================================\n`;
               console.log(debugLog);
-              // Write to file for easy monitoring
-              require('fs').appendFileSync('/tmp/texture_debug.log', debugLog);
+              // Write to file for easy monitoring (using dynamic import for ESM compatibility)
+              import('fs').then(fs => fs.appendFileSync('/tmp/texture_debug.log', debugLog)).catch(() => {});
               
               if (textureResult.output?.pbr_model) {
                 console.log('[3D Model] Enhanced texture completed, downloading...');

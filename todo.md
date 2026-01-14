@@ -141,3 +141,20 @@
 - [x] Now allows 1-2 groups to succeed even if others fail
 - [x] Returns partial success with information about failed groups
 - [ ] Test fix with new project to verify partial success works
+
+
+## Bug Fixes - Project 480012 3D Generation Failed (Tripo API charged)
+- [ ] Investigate 3D generation failure - Tripo API charged but model not received
+- [ ] Check server logs for complete Tripo API response
+- [ ] Fix model download/transfer issue
+- [ ] Add retry mechanism for model download
+
+
+## Bug Fixes - Project 480013 3D Generation Fixed ✅
+- [x] Diagnosed root cause: Tripo API returns `pbr_model` instead of `model` when pbr=true
+- [x] Old CDN image URLs return 403 (expired), but new images work correctly
+- [x] Fixed routers.ts to use `pbr_model || model` for model URL extraction
+- [x] Tested with project 480013 - 3D model generated successfully!
+- [x] 3D model viewer displays correctly with interactive rotation
+- [x] Download GLB button works
+- [x] Order submission form displays correctly
