@@ -132,3 +132,12 @@
 2. Add fallback: if 3D fails, use placeholder or previous model
 3. Contact Tripo support for API response format clarification
 4. Consider alternative 3D generation API if Tripo proves unreliable
+
+
+## Bug Fixes - Project 480011 Image Generation Failure
+- [x] Investigate "Image generation failed for design variation 3" error
+- [x] Root cause: E005 content moderation error from Nano Banana API
+- [x] Fix: Changed Promise.all to Promise.allSettled for partial success
+- [x] Now allows 1-2 groups to succeed even if others fail
+- [x] Returns partial success with information about failed groups
+- [ ] Test fix with new project to verify partial success works

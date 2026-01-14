@@ -160,14 +160,45 @@ export const appRouter = router({
           }
         });
         
-        // Wait for all 3 groups to complete in parallel
-        const results = await Promise.all(groupPromises);
-        groups.push(...results);
+        // Wait for all 3 groups to complete in parallel (using allSettled to allow partial success)
+        const settledResults = await Promise.allSettled(groupPromises);
         
-        // Update project status to completed
-        await updateProjectStatus(input.projectId, "completed");
+        // Process results - collect successful groups and failed groups
+        const successfulGroups: { groupNumber: number; imageUrls: string[] }[] = [];
+        const failedGroups: { groupNumber: number; error: string }[] = [];
         
-        return { success: true, groups };
+        settledResults.forEach((result, index) => {
+          const groupNum = index + 1;
+          if (result.status === 'fulfilled') {
+            successfulGroups.push(result.value);
+          } else {
+            const errorMessage = result.reason instanceof Error ? result.reason.message : String(result.reason);
+            failedGroups.push({ groupNumber: groupNum, error: errorMessage });
+            console.error(`[Generations] Group ${groupNum} failed:`, errorMessage);
+          }
+        });
+        
+        groups.push(...successfulGroups);
+        
+        // If at least one group succeeded, mark as completed
+        if (successfulGroups.length > 0) {
+          await updateProjectStatus(input.projectId, "completed");
+          
+          // Return partial success with information about failed groups
+          return { 
+            success: true, 
+            groups: successfulGroups,
+            failedGroups: failedGroups.length > 0 ? failedGroups : undefined,
+            message: failedGroups.length > 0 
+              ? `${successfulGroups.length} of 3 design variations generated successfully. ${failedGroups.length} failed due to content moderation or API errors.`
+              : undefined
+          };
+        } else {
+          // All groups failed
+          await updateProjectStatus(input.projectId, "draft");
+          const allErrors = failedGroups.map(f => f.error).join('; ');
+          throw new Error(`All design variations failed: ${allErrors}`);
+        }
         
       } catch (error) {
         // Ensure project status is updated to draft so user can retry
