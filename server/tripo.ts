@@ -148,8 +148,13 @@ export async function waitForTaskCompletion(
     }
 
     const status = await getTaskStatus(taskId);
+    
+    console.log(`[Tripo] Task ${taskId} status: ${status.status}`);
 
     if (status.status === "success") {
+      console.log(`[Tripo] Task ${taskId} completed successfully`);
+      console.log(`[Tripo] Full output:`, JSON.stringify(status.output, null, 2));
+      console.log(`[Tripo] Available fields:`, Object.keys(status.output || {}));
       return status;
     }
 

@@ -94,11 +94,12 @@ export const appRouter = router({
     generateThreeViews: publicProcedure
       .input(z.object({ projectId: z.number() }))
       .mutation(async ({ input }) => {
-        const project = await getProjectById(input.projectId);
-        if (!project) throw new Error("Project not found");
-        
-        // Update project status
-        await updateProjectStatus(input.projectId, "generating");
+        try {
+          const project = await getProjectById(input.projectId);
+          if (!project) throw new Error("Project not found");
+          
+          // Update project status
+          await updateProjectStatus(input.projectId, "generating");
         
         // Generate 3 groups of three-view images IN PARALLEL for faster generation
         const groups = [];
@@ -163,13 +164,24 @@ export const appRouter = router({
         const results = await Promise.all(groupPromises);
         groups.push(...results);
         
-        console.log('[Generations] All 3 groups completed!');
-        
         // Update project status to completed
         await updateProjectStatus(input.projectId, "completed");
         
-        return { groups };
-      }),
+        return { success: true, groups };
+        
+      } catch (error) {
+        // Ensure project status is updated to draft so user can retry
+        await updateProjectStatus(input.projectId, "draft").catch(console.error);
+        
+        // Return a proper JSON error response
+        console.error('[Generations] Error in generateThreeViews:', error);
+        throw new Error(
+          error instanceof Error 
+            ? `Generation failed: ${error.message}` 
+            : 'Generation failed due to an unknown error'
+        );
+      }
+    }),
     
     getByProject: publicProcedure
       .input(z.object({ projectId: z.number() }))

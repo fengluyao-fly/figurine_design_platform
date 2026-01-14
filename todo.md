@@ -80,3 +80,19 @@
 - [x] Fix API mutation authentication/permission issue (Tripo API key expired)
 - [x] Request and validate new Tripo API key
 - [x] Test fix and verify error is resolved
+## Bug Fixes - Project 480003 Issues
+
+- [ ] Fix four-view generation: left/right side views have reversed foot/head orientation in Group 1
+- [ ] Fix image cropping: Group 3 has incomplete images with cropping issues
+- [x] Attempt to enforce strict adherence to input sketch (enhanced Nano Banana prompt with stronger constraints)
+- [ ] Nano Banana API still ignores constraints - need alternative solution (post-processing or different API)
+- [ ] Fix 3D model generation failure for project 480003
+- [x] Add detailed debug logging for Tripo API responses
+- [ ] Investigate Tripo API response format (waiting for test generation to complete)
+
+## Bug Fixes - API Returns HTML Instead of JSON (Project 480008)
+- [x] Investigate "Unexpected token '<'" error on /generate/480008
+- [x] Error occurs when four-view generation takes too long (timeout)
+- [x] Fix server timeout handling to return JSON error instead of HTML
+- [x] Add proper error handling for Nano Banana API timeouts (wrapped in try-catch)
+- [ ] Test fix and verify API returns valid JSON even on timeout
