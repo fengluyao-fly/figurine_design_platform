@@ -1,0 +1,25 @@
+{
+  "query": "SELECT id, type, groupNumber FROM generations WHERE projectId = 420001 ORDER BY groupNumber;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 31pJVL3gZeDmKMR.root --database MMPeiPEYV4xzt6Po2BN4fh --execute SELECT id, type, groupNumber FROM generations WHERE projectId = 420001 ORDER BY groupNumber;",
+  "rows": [
+    {
+      "id": "450002",
+      "type": "three_view",
+      "groupNumber": "1"
+    },
+    {
+      "id": "450003",
+      "type": "three_view",
+      "groupNumber": "2"
+    },
+    {
+      "id": "450004",
+      "type": "three_view",
+      "groupNumber": "3"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttype\tgroupNumber\n450002\tthree_view\t1\n450003\tthree_view\t2\n450004\tthree_view\t3\n",
+  "stderr": "",
+  "execution_time_ms": 1533
+}

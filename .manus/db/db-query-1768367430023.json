@@ -1,0 +1,15 @@
+{
+  "query": "SELECT id, status, description FROM projects WHERE id = 420001;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 31pJVL3gZeDmKMR.root --database MMPeiPEYV4xzt6Po2BN4fh --execute SELECT id, status, description FROM projects WHERE id = 420001;",
+  "rows": [
+    {
+      "id": "420001",
+      "status": "completed",
+      "description": "A cute cartoon robot toy with round head and big eyes"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstatus\tdescription\n420001\tcompleted\tA cute cartoon robot toy with round head and big eyes\n",
+  "stderr": "",
+  "execution_time_ms": 1632
+}

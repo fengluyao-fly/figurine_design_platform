@@ -66,3 +66,11 @@
 - [x] Integrate Replicate API as alternative (available if needed)
 - [x] Restored to use Manus built-in API
 - [ ] User needs to contact Manus support for quota/billing: https://help.manus.im
+
+## Bug Fixes - 3D Model Texture Enhancement
+- [x] Investigate why texture enhancement never executes
+- [x] Fix field name check (pbr_model → model for initial generation)
+- [x] Add detailed debug logging to /tmp/texture_debug.log
+- [x] Verify API parameters match Tripo documentation
+- [ ] Test texture enhancement once Tripo API 502 error is resolved
+- [ ] Monitor /tmp/texture_debug.log for complete API response

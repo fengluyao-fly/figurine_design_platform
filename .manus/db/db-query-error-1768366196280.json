@@ -1,0 +1,14 @@
+{
+  "query": "SHOW TABLES; SELECT * FROM three_d_generations WHERE status = 'completed' ORDER BY created_at DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 31pJVL3gZeDmKMR.root --database MMPeiPEYV4xzt6Po2BN4fh --execute SHOW TABLES; SELECT * FROM three_d_generations WHERE status = 'completed' ORDER BY created_at DESC LIMIT 5;",
+  "returncode": 1,
+  "logs": [
+    "Tables_in_MMPeiPEYV4xzt6Po2BN4fh",
+    "__drizzle_migrations",
+    "generations",
+    "orders",
+    "projects",
+    "users",
+    "ERROR 1146 (42S02) at line 1: Table 'mmpeipeyv4xzt6po2bn4fh.three_d_generations' doesn't exist"
+  ]
+}

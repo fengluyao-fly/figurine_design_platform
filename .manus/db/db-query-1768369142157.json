@@ -1,0 +1,31 @@
+{
+  "query": "SELECT id, projectId, type, groupNumber, createdAt FROM generations WHERE projectId = 420001 ORDER BY createdAt DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 31pJVL3gZeDmKMR.root --database MMPeiPEYV4xzt6Po2BN4fh --execute SELECT id, projectId, type, groupNumber, createdAt FROM generations WHERE projectId = 420001 ORDER BY createdAt DESC;",
+  "rows": [
+    {
+      "id": "450004",
+      "projectId": "420001",
+      "type": "three_view",
+      "groupNumber": "3",
+      "createdAt": "2026-01-14 05:10:19"
+    },
+    {
+      "id": "450003",
+      "projectId": "420001",
+      "type": "three_view",
+      "groupNumber": "2",
+      "createdAt": "2026-01-14 05:10:11"
+    },
+    {
+      "id": "450002",
+      "projectId": "420001",
+      "type": "three_view",
+      "groupNumber": "1",
+      "createdAt": "2026-01-14 05:10:02"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tprojectId\ttype\tgroupNumber\tcreatedAt\n450004\t420001\tthree_view\t3\t2026-01-14 05:10:19\n450003\t420001\tthree_view\t2\t2026-01-14 05:10:11\n450002\t420001\tthree_view\t1\t2026-01-14 05:10:02\n",
+  "stderr": "",
+  "execution_time_ms": 1514
+}

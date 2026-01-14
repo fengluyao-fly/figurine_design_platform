@@ -1,0 +1,13 @@
+{
+  "query": "SELECT assetUrls FROM generations WHERE projectId = 420002 AND groupNumber = 1 LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 31pJVL3gZeDmKMR.root --database MMPeiPEYV4xzt6Po2BN4fh --execute SELECT assetUrls FROM generations WHERE projectId = 420002 AND groupNumber = 1 LIMIT 1;",
+  "rows": [
+    {
+      "assetUrls": "[\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768368402351-qwpsz-front.png\",\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768368402351-qwpsz-left.png\",\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768368402351-qwpsz-back.png\",\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768368402351-qwpsz-right.png\"]"
+    }
+  ],
+  "messages": [],
+  "stdout": "assetUrls\n[\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768368402351-qwpsz-front.png\",\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768368402351-qwpsz-left.png\",\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768368402351-qwpsz-back.png\",\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768368402351-qwpsz-right.png\"]\n",
+  "stderr": "",
+  "execution_time_ms": 1558
+}

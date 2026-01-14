@@ -267,89 +267,97 @@ export const appRouter = router({
         // Start async polling (don't await - let it run in background)
         waitForTaskCompletion(taskId, 600).then(async (result) => {
           try {
-            if (result.output?.pbr_model) {
-              console.log('[3D Model] Task completed, downloading GLB file from Tripo AI...');
-              console.log('[3D Model] GLB URL:', result.output.pbr_model);
+            // Initial multiview_to_3d task returns 'model', not 'pbr_model'
+            const initialModelUrl = result.output?.model;
+            if (!initialModelUrl) {
+              throw new Error('No model URL in result.output');
+            }
+            
+            console.log('[3D Model] Initial task completed, downloading GLB file from Tripo AI...');
+            console.log('[3D Model] Initial GLB URL:', initialModelUrl);
+            
+            // Download initial GLB file from Tripo AI
+            const glbResponse = await fetch(initialModelUrl);
+            if (!glbResponse.ok) {
+              throw new Error(`Failed to download GLB: ${glbResponse.status} ${glbResponse.statusText}`);
+            }
+            const glbBuffer = Buffer.from(await glbResponse.arrayBuffer());
+            
+            console.log('[3D Model] GLB file downloaded, size:', glbBuffer.length, 'bytes');
+            
+            // Upload to S3
+            const timestamp = Date.now();
+            const randomStr = Math.random().toString(36).substring(2, 8);
+            const glbKey = `3d-models/${timestamp}-${randomStr}.glb`;
+            
+            console.log('[3D Model] Uploading to S3 with key:', glbKey);
+            const { url: glbUrl } = await storagePut(glbKey, glbBuffer, 'model/gltf-binary');
+            
+            console.log('[3D Model] GLB uploaded to S3:', glbUrl);
+            
+            // Apply detailed texture for better quality (hair, clothing, etc.)
+            console.log('[3D Model] Applying detailed texture enhancement...');
+            try {
+              const textureTaskId = await applyDetailedTexture(taskId);
+              console.log('[3D Model] Texture enhancement task created:', textureTaskId);
               
-              // Download GLB file from Tripo AI
-              const glbResponse = await fetch(result.output.pbr_model);
-              if (!glbResponse.ok) {
-                throw new Error(`Failed to download GLB: ${glbResponse.status} ${glbResponse.statusText}`);
-              }
-              const glbBuffer = Buffer.from(await glbResponse.arrayBuffer());
+              // Wait for texture enhancement to complete
+              const textureResult = await waitForTaskCompletion(textureTaskId, 600);
               
-              console.log('[3D Model] GLB file downloaded, size:', glbBuffer.length, 'bytes');
+              // DEBUG: Log complete texture result
+              const debugLog = `\n=== TEXTURE ENHANCEMENT DEBUG ===\nTimestamp: ${new Date().toISOString()}\nProject ID: ${input.projectId}\nOriginal Task ID: ${taskId}\nTexture Task ID: ${textureTaskId}\n\nFull Result:\n${JSON.stringify(textureResult, null, 2)}\n\nStatus: ${textureResult.status}\nOutput: ${JSON.stringify(textureResult.output, null, 2)}\nHas pbr_model: ${!!textureResult.output?.pbr_model}\nHas model: ${!!textureResult.output?.model}\nHas base_model: ${!!textureResult.output?.base_model}\n=================================\n`;
+              console.log(debugLog);
+              // Write to file for easy monitoring
+              require('fs').appendFileSync('/tmp/texture_debug.log', debugLog);
               
-              // Upload to S3
-              const timestamp = Date.now();
-              const randomStr = Math.random().toString(36).substring(2, 8);
-              const glbKey = `3d-models/${timestamp}-${randomStr}.glb`;
-              
-              console.log('[3D Model] Uploading to S3 with key:', glbKey);
-              const { url: glbUrl } = await storagePut(glbKey, glbBuffer, 'model/gltf-binary');
-              
-              console.log('[3D Model] GLB uploaded to S3:', glbUrl);
-              
-              // Apply detailed texture for better quality (hair, clothing, etc.)
-              console.log('[3D Model] Applying detailed texture enhancement...');
-              try {
-                const textureTaskId = await applyDetailedTexture(taskId);
-                console.log('[3D Model] Texture enhancement task created:', textureTaskId);
+              if (textureResult.output?.pbr_model) {
+                console.log('[3D Model] Enhanced texture completed, downloading...');
                 
-                // Wait for texture enhancement to complete
-                const textureResult = await waitForTaskCompletion(textureTaskId, 600);
-                
-                if (textureResult.output?.pbr_model) {
-                  console.log('[3D Model] Enhanced texture completed, downloading...');
+                // Download enhanced GLB
+                const enhancedGlbResponse = await fetch(textureResult.output.pbr_model);
+                if (enhancedGlbResponse.ok) {
+                  const enhancedGlbBuffer = Buffer.from(await enhancedGlbResponse.arrayBuffer());
                   
-                  // Download enhanced GLB
-                  const enhancedGlbResponse = await fetch(textureResult.output.pbr_model);
-                  if (enhancedGlbResponse.ok) {
-                    const enhancedGlbBuffer = Buffer.from(await enhancedGlbResponse.arrayBuffer());
-                    
-                    // Upload enhanced GLB to S3 (overwrite)
-                    const { url: enhancedGlbUrl } = await storagePut(glbKey, enhancedGlbBuffer, 'model/gltf-binary');
-                    
-                    console.log('[3D Model] Enhanced GLB uploaded:', enhancedGlbUrl);
-                    
-                    await update3DModelGeneration(modelGenId, {
-                      status: "completed",
-                      modelUrl: enhancedGlbUrl,
-                      modelKey: glbKey,
-                    });
-                  } else {
-                    // Fallback to original if enhanced download fails
-                    console.warn('[3D Model] Enhanced GLB download failed, using original');
-                    await update3DModelGeneration(modelGenId, {
-                      status: "completed",
-                      modelUrl: glbUrl,
-                      modelKey: glbKey,
-                    });
-                  }
+                  // Upload enhanced GLB to S3 (overwrite)
+                  const { url: enhancedGlbUrl } = await storagePut(glbKey, enhancedGlbBuffer, 'model/gltf-binary');
+                  
+                  console.log('[3D Model] Enhanced GLB uploaded:', enhancedGlbUrl);
+                  
+                  await update3DModelGeneration(modelGenId, {
+                    status: "completed",
+                    modelUrl: enhancedGlbUrl,
+                    modelKey: glbKey,
+                  });
                 } else {
-                  // Fallback to original if no enhanced model
-                  console.warn('[3D Model] No enhanced model in output, using original');
+                  // Fallback to original if enhanced download fails
+                  console.warn('[3D Model] Enhanced GLB download failed, using original');
                   await update3DModelGeneration(modelGenId, {
                     status: "completed",
                     modelUrl: glbUrl,
                     modelKey: glbKey,
                   });
                 }
-              } catch (textureError) {
-                // Fallback to original if texture enhancement fails
-                console.error('[3D Model] Texture enhancement failed:', textureError);
-                console.log('[3D Model] Using original model without enhancement');
+              } else {
+                // Fallback to original if no enhanced model
+                console.warn('[3D Model] No enhanced model in output, using original');
                 await update3DModelGeneration(modelGenId, {
                   status: "completed",
                   modelUrl: glbUrl,
                   modelKey: glbKey,
                 });
               }
-              
-              console.log('[3D Model] Database updated successfully');
-            } else {
-              throw new Error('No pbr_model in result.output');
+            } catch (textureError) {
+              // Fallback to original if texture enhancement fails
+              console.error('[3D Model] Texture enhancement failed:', textureError);
+              console.log('[3D Model] Using original model without enhancement');
+              await update3DModelGeneration(modelGenId, {
+                status: "completed",
+                modelUrl: glbUrl,
+                modelKey: glbKey,
+              });
             }
+            
+            console.log('[3D Model] Database updated successfully');
           } catch (error) {
             console.error('[3D Model] Error in processing:', error);
             console.error('[3D Model] Error stack:', error instanceof Error ? error.stack : 'No stack');
