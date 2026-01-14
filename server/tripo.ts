@@ -10,48 +10,53 @@ interface TripoTaskResponse {
   };
 }
 
+interface TripoModelOutput {
+  type: string;
+  url: string;
+}
+
 interface TripoTaskStatus {
   code: number;
   data: {
     task_id: string;
     status: "queued" | "running" | "success" | "failed" | "cancelled";
     output?: {
-      model?: string;
-      pbr_model?: string;
-      rendered_image?: string;
-      base_model?: string;
+      model?: string | TripoModelOutput;
+      pbr_model?: string | TripoModelOutput;
+      rendered_image?: string | TripoModelOutput;
+      base_model?: string | TripoModelOutput;
+    };
+    result?: {
+      model?: TripoModelOutput;
+      pbr_model?: TripoModelOutput;
+      rendered_image?: TripoModelOutput;
+      base_model?: TripoModelOutput;
     };
     progress?: number;
   };
 }
 
 /**
- * Create a multiview-to-3D task with Tripo AI
- * @param imageUrls Array of 4 image URLs in order: [front, left, back, right]
+ * Create a text-to-3D task with Tripo AI
+ * @param prompt Text description of the 3D model
  * @returns Task ID for polling
  */
-export async function createMultiviewTo3DTask(imageUrls: string[]): Promise<string> {
-  if (imageUrls.length !== 4) {
-    throw new Error("Multiview generation requires exactly 4 images (front, left, back, right)");
+export async function createTextTo3DTask(prompt: string): Promise<string> {
+  if (!TRIPO_API_KEY) {
+    throw new Error("TRIPO_API_KEY is not configured");
   }
 
-  // Use all 4 views for better 3D reconstruction accuracy
-  const files = [
-    { type: "jpg", url: imageUrls[0] }, // front
-    { type: "jpg", url: imageUrls[1] }, // left
-    { type: "jpg", url: imageUrls[2] }, // back
-    { type: "jpg", url: imageUrls[3] }, // right
-  ];
+  console.log("[Tripo] Creating text-to-3D task with prompt:", prompt.substring(0, 100));
 
   const response = await axios.post<TripoTaskResponse>(
     `${TRIPO_API_BASE}/task`,
     {
-      type: "multiview_to_model",
-      files,
+      type: "text_to_model",
+      prompt,
       model_version: "v2.5-20250123",
       texture: true,
       pbr: true,
-      face_limit: 50000, // Increased from 10k to 50k for better quality
+      texture_quality: "standard", // Speed priority
     },
     {
       headers: {
@@ -62,15 +67,118 @@ export async function createMultiviewTo3DTask(imageUrls: string[]): Promise<stri
   );
 
   if (response.data.code !== 0) {
-    throw new Error(`Tripo API error: ${response.data}`);
+    throw new Error(`Tripo API error: ${JSON.stringify(response.data)}`);
   }
 
+  console.log("[Tripo] Text-to-3D task created:", response.data.data.task_id);
+  return response.data.data.task_id;
+}
+
+/**
+ * Create an image-to-3D task with Tripo AI
+ * @param imageUrl URL of the image
+ * @returns Task ID for polling
+ */
+export async function createImageTo3DTask(imageUrl: string): Promise<string> {
+  if (!TRIPO_API_KEY) {
+    throw new Error("TRIPO_API_KEY is not configured");
+  }
+
+  console.log("[Tripo] Creating image-to-3D task with image:", imageUrl.substring(0, 80));
+
+  const response = await axios.post<TripoTaskResponse>(
+    `${TRIPO_API_BASE}/task`,
+    {
+      type: "image_to_model",
+      file: {
+        type: "jpg",
+        url: imageUrl,
+      },
+      model_version: "v2.5-20250123",
+      texture: true,
+      pbr: true,
+      texture_quality: "standard",
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${TRIPO_API_KEY}`,
+      },
+    }
+  );
+
+  if (response.data.code !== 0) {
+    throw new Error(`Tripo API error: ${JSON.stringify(response.data)}`);
+  }
+
+  console.log("[Tripo] Image-to-3D task created:", response.data.data.task_id);
+  return response.data.data.task_id;
+}
+
+/**
+ * Create a multiview-to-3D task with Tripo AI
+ * IMPORTANT: Views must be from CHARACTER's perspective, not viewer's!
+ * @param imageUrls Array of 1-4 image URLs in order: [front, left, back, right]
+ *   - front: Character facing camera (REQUIRED)
+ *   - left: Character's LEFT side (their left arm visible)
+ *   - back: Character's back
+ *   - right: Character's RIGHT side (their right arm visible)
+ * @returns Task ID for polling
+ */
+export async function createMultiviewTo3DTask(imageUrls: string[]): Promise<string> {
+  if (!TRIPO_API_KEY) {
+    throw new Error("TRIPO_API_KEY is not configured");
+  }
+
+  if (imageUrls.length < 1 || imageUrls.length > 4) {
+    throw new Error("Multiview generation requires 1-4 images");
+  }
+
+  console.log("[Tripo] Creating multiview-to-3D task with", imageUrls.length, "images");
+  console.log("[Tripo] View order: [front, left, back, right]");
+
+  // Build files array - must be exactly 4 items, but can omit file_token for missing views
+  // Order: [front, left, back, right]
+  const files: Array<{ type: string; url?: string }> = [];
+  
+  for (let i = 0; i < 4; i++) {
+    if (i < imageUrls.length && imageUrls[i]) {
+      files.push({ type: "jpg", url: imageUrls[i] });
+    } else {
+      // Omit this view by not providing url
+      files.push({ type: "jpg" });
+    }
+  }
+
+  const response = await axios.post<TripoTaskResponse>(
+    `${TRIPO_API_BASE}/task`,
+    {
+      type: "multiview_to_model",
+      files,
+      model_version: "v2.5-20250123",
+      texture: true,
+      pbr: true,
+      texture_quality: "standard",
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${TRIPO_API_KEY}`,
+      },
+    }
+  );
+
+  if (response.data.code !== 0) {
+    throw new Error(`Tripo API error: ${JSON.stringify(response.data)}`);
+  }
+
+  console.log("[Tripo] Multiview-to-3D task created:", response.data.data.task_id);
   return response.data.data.task_id;
 }
 
 /**
  * Check the status of a Tripo task
- * @param taskId Task ID from createMultiviewTo3DTask
+ * @param taskId Task ID
  * @returns Task status and output URLs if completed
  */
 export async function getTaskStatus(taskId: string): Promise<TripoTaskStatus["data"]> {
@@ -84,48 +192,10 @@ export async function getTaskStatus(taskId: string): Promise<TripoTaskStatus["da
   );
 
   if (response.data.code !== 0) {
-    throw new Error(`Tripo API error: ${response.data}`);
+    throw new Error(`Tripo API error: ${JSON.stringify(response.data)}`);
   }
 
   return response.data.data;
-}
-
-/**
- * Apply high-quality texture to an existing 3D model
- * @param originalTaskId Task ID of the original 3D model
- * @returns New task ID for texture enhancement
- */
-export async function applyDetailedTexture(originalTaskId: string): Promise<string> {
-  if (!TRIPO_API_KEY) {
-    throw new Error("TRIPO_API_KEY is not configured");
-  }
-
-  console.log("[Tripo] Applying detailed texture to model:", originalTaskId);
-
-  const response = await axios.post<TripoTaskResponse>(
-    `${TRIPO_API_BASE}/task`,
-    {
-      type: "texture_model",
-      original_model_task_id: originalTaskId,
-      model_version: "v3.0-20250812",
-      texture_quality: "detailed",
-      texture: true,
-      pbr: true,
-    },
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${TRIPO_API_KEY}`,
-      },
-    }
-  );
-
-  if (response.data.code !== 0) {
-    throw new Error(`Tripo API error: ${response.data}`);
-  }
-
-  console.log("[Tripo] Detailed texture task created:", response.data.data.task_id);
-  return response.data.data.task_id;
 }
 
 /**
@@ -149,12 +219,11 @@ export async function waitForTaskCompletion(
 
     const status = await getTaskStatus(taskId);
     
-    console.log(`[Tripo] Task ${taskId} status: ${status.status}`);
+    console.log(`[Tripo] Task ${taskId} status: ${status.status}, progress: ${status.progress || 0}%`);
 
     if (status.status === "success") {
       console.log(`[Tripo] Task ${taskId} completed successfully`);
-      console.log(`[Tripo] Full output:`, JSON.stringify(status.output, null, 2));
-      console.log(`[Tripo] Available fields:`, Object.keys(status.output || {}));
+      console.log(`[Tripo] Output:`, JSON.stringify(status.output, null, 2));
       return status;
     }
 
@@ -165,4 +234,38 @@ export async function waitForTaskCompletion(
     // Still running or queued, wait before next poll
     await new Promise((resolve) => setTimeout(resolve, pollInterval));
   }
+}
+
+/**
+ * Get the model URL from task result
+ * Handles both pbr_model and model fields
+ */
+export function getModelUrlFromResult(data: TripoTaskStatus["data"]): string | null {
+  // Check result field first (new API format)
+  if (data.result) {
+    const pbrModel = data.result.pbr_model;
+    if (pbrModel && typeof pbrModel === 'object' && pbrModel.url) {
+      return pbrModel.url;
+    }
+    const model = data.result.model;
+    if (model && typeof model === 'object' && model.url) {
+      return model.url;
+    }
+  }
+  
+  // Check output field (legacy format)
+  if (data.output) {
+    const pbrModel = data.output.pbr_model;
+    if (pbrModel) {
+      if (typeof pbrModel === 'string') return pbrModel;
+      if (typeof pbrModel === 'object' && pbrModel.url) return pbrModel.url;
+    }
+    const model = data.output.model;
+    if (model) {
+      if (typeof model === 'string') return model;
+      if (typeof model === 'object' && model.url) return model.url;
+    }
+  }
+  
+  return null;
 }

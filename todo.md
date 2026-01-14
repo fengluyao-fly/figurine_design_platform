@@ -158,3 +158,54 @@
 - [x] 3D model viewer displays correctly with interactive rotation
 - [x] Download GLB button works
 - [x] Order submission form displays correctly
+
+
+## Major Refactoring - Tripo-Only Architecture (Project 540001 Feedback)
+
+### Issues Identified
+- [ ] Text editing after four-view generation causes cropping issues (cuts into character image)
+- [ ] 3D model has front face on back of head (suspected left/right view reversal with Tripo)
+- [ ] Tripo texture generation takes too long (base model is fast, texture is slow)
+
+### Architecture Changes
+- [x] Remove Nano Banana API completely - delete all related code
+- [x] Use Tripo AI for ALL image-to-3D generation (maintain consistency)
+- [x] Support multiple input types: text, single image, 1-4 multi-view images
+- [x] Single image upload option: generate four-view first, then 3D model
+- [ ] Add texture and style selection in 3D model preview (per Tripo options)
+- [x] Do NOT use high-definition or ultra-clear precision/textures (speed priority)
+- [x] Clean up all unrelated legacy code for clarity
+
+### Research Tripo API
+- [x] Study Tripo text-to-3D generation API
+- [x] Study Tripo image-to-3D generation API
+- [x] Study Tripo multi-view-to-3D generation API
+- [x] Document available texture and style options
+- [x] Understand left/right view orientation requirements (from CHARACTER's perspective, not viewer's)
+
+### Frontend Refactoring
+- [x] New upload interface supporting text/single-image/multi-view input
+- [x] Option to generate four-view from single image before 3D
+- [x] 3D model viewer with texture/style selection (basic implementation)
+- [x] Model interaction: rotate, zoom, pan
+
+### Backend Refactoring
+- [x] Implement Tripo text-to-3D endpoint
+- [x] Implement Tripo image-to-3D endpoint
+- [x] Implement Tripo multi-view-to-3D endpoint
+- [x] Remove Nano Banana integration code
+- [x] Simplify database schema
+
+
+### Testing Progress
+- [x] Text-to-3D generation flow tested (project 570003 - pink bunny)
+- [ ] Image-to-3D generation flow
+- [ ] Multi-view-to-3D generation flow
+- [ ] Regeneration feature
+- [ ] Order submission with Stripe
+- [ ] History page session tracking
+
+### Bug Fixes Applied
+- [x] Fixed Tripo API response parsing (result.pbr_model.url nested structure)
+- [x] Fixed getModelUrlFromResult to handle both legacy and new API formats
+- [x] Fixed routers.ts to pass full result object instead of just output

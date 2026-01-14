@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Box, ArrowLeft, Loader2, Eye, Download } from "lucide-react";
+import { Box, ArrowLeft, Loader2, Eye, Type, Image, Images } from "lucide-react";
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { format } from "date-fns";
@@ -81,16 +81,16 @@ export default function History() {
                         </Badge>
                       </div>
                       <CardDescription className="text-base line-clamp-2">
-                        {project.description}
+                        {project.textPrompt || `${project.inputType.replace('_', ' ')} project`}
                       </CardDescription>
                       <p className="text-xs text-muted-foreground mt-2">
                         Created {format(new Date(project.createdAt), "MMM dd, yyyy 'at' HH:mm")}
                       </p>
                     </div>
-                    {project.sketchUrl && (
+                    {project.imageUrls && project.imageUrls.length > 0 && (
                       <img
-                        src={project.sketchUrl}
-                        alt="Sketch"
+                        src={project.imageUrls[0]}
+                        alt="Project preview"
                         className="w-24 h-24 object-cover rounded-lg border ml-4"
                       />
                     )}
@@ -106,29 +106,21 @@ export default function History() {
                         </Button>
                       </Link>
                     )}
-                    {project.status === "generating" && (
-                      <Link href={`/generate/${project.id}`}>
+                    {(project.status === "generating_3d" || project.status === "generating_views") && (
+                      <Link href={`/project/${project.id}`}>
                         <Button variant="outline">
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          View Generation
+                          View Progress
                         </Button>
                       </Link>
                     )}
-                    {(project.status === "completed" || project.status === "ordered") && (
-                      <>
-                        <Link href={`/generate/${project.id}`}>
-                          <Button variant="outline">
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Designs
-                          </Button>
-                        </Link>
-                        <Link href={`/model/${project.id}`}>
-                          <Button>
-                            <Download className="mr-2 h-4 w-4" />
-                            View 3D Model
-                          </Button>
-                        </Link>
-                      </>
+                    {(project.status === "completed" || project.status === "ordered" || project.status === "views_ready") && (
+                      <Link href={`/project/${project.id}`}>
+                        <Button>
+                          <Eye className="mr-2 h-4 w-4" />
+                          View Project
+                        </Button>
+                      </Link>
                     )}
                   </div>
                 </CardContent>
