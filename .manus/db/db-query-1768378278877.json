@@ -1,0 +1,28 @@
+{
+  "query": "SELECT id, projectId, type, assetUrls FROM generations WHERE projectId = 480010;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 31pJVL3gZeDmKMR.root --database MMPeiPEYV4xzt6Po2BN4fh --execute SELECT id, projectId, type, assetUrls FROM generations WHERE projectId = 480010;",
+  "rows": [
+    {
+      "id": "510035",
+      "projectId": "480010",
+      "type": "three_view",
+      "assetUrls": "[\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768377716115-3u8db-front.png\",\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768377716115-3u8db-left.png\",\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768377716115-3u8db-back.png\",\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768377716115-3u8db-right.png\"]"
+    },
+    {
+      "id": "510036",
+      "projectId": "480010",
+      "type": "three_view",
+      "assetUrls": "[\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768377723913-ag9b47-front.png\",\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768377723913-ag9b47-left.png\",\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768377723913-ag9b47-back.png\",\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768377723913-ag9b47-right.png\"]"
+    },
+    {
+      "id": "510037",
+      "projectId": "480010",
+      "type": "three_view",
+      "assetUrls": "[\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768377754008-f1m1x9-front.png\",\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768377754008-f1m1x9-left.png\",\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768377754008-f1m1x9-back.png\",\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768377754008-f1m1x9-right.png\"]"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tprojectId\ttype\tassetUrls\n510035\t480010\tthree_view\t[\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768377716115-3u8db-front.png\",\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768377716115-3u8db-left.png\",\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768377716115-3u8db-back.png\",\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768377716115-3u8db-right.png\"]\n510036\t480010\tthree_view\t[\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768377723913-ag9b47-front.png\",\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768377723913-ag9b47-left.png\",\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768377723913-ag9b47-back.png\",\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768377723913-ag9b47-right.png\"]\n510037\t480010\tthree_view\t[\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768377754008-f1m1x9-front.png\",\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768377754008-f1m1x9-left.png\",\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768377754008-f1m1x9-back.png\",\"https://d2xsxph8kpxj0f.cloudfront.net/310519663279679404/MMPeiPEYV4xzt6Po2BN4fh/four-views/1768377754008-f1m1x9-right.png\"]\n",
+  "stderr": "",
+  "execution_time_ms": 1539
+}

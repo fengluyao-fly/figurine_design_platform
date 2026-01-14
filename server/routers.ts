@@ -279,9 +279,20 @@ export const appRouter = router({
         // Start async polling (don't await - let it run in background)
         waitForTaskCompletion(taskId, 600).then(async (result) => {
           try {
+            // DEBUG: Log complete result
+            console.log('[3D Model] waitForTaskCompletion returned:');
+            console.log('[3D Model] Status:', result.status);
+            console.log('[3D Model] Full result:', JSON.stringify(result, null, 2));
+            console.log('[3D Model] Output object:', JSON.stringify(result.output, null, 2));
+            console.log('[3D Model] Output keys:', result.output ? Object.keys(result.output) : 'output is null/undefined');
+            
             // Initial multiview_to_3d task returns 'model', not 'pbr_model'
             const initialModelUrl = result.output?.model;
+            console.log('[3D Model] Extracted model URL:', initialModelUrl);
+            
             if (!initialModelUrl) {
+              console.error('[3D Model] ERROR: No model URL found in result.output');
+              console.error('[3D Model] result.output content:', result.output);
               throw new Error('No model URL in result.output');
             }
             

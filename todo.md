@@ -96,3 +96,39 @@
 - [x] Fix server timeout handling to return JSON error instead of HTML
 - [x] Add proper error handling for Nano Banana API timeouts (wrapped in try-catch)
 - [ ] Test fix and verify API returns valid JSON even on timeout
+
+## Bug Fixes - Project 480009 Issues
+- [ ] Fix Group 2 four-view cropping issue (cropped into the image itself)
+- [ ] Fix Group 3 generation issue (only clothes, missing face and body)
+- [ ] Investigate why Nano Banana generates incomplete or incorrectly cropped images
+- [ ] Fix 3D model generation failure (Tripo API succeeds but model download/transfer fails)
+- [ ] Investigate model download from Tripo or upload to S3 failure
+- [x] Confirmed: Tripo API consumes credits (generation succeeds) but transfer fails
+
+
+## Summary - Root Cause of 3D Generation Failures
+
+**Problem**: All 3D model generation attempts fail with "generation failed" error
+
+**Evidence**:
+1. Tripo API consumes credits (generation succeeds on their end)
+2. waitForTaskCompletion returns status="success"
+3. But result.output.model field is empty/null/undefined
+4. Code throws: "No model URL in result.output"
+
+**Potential Causes**:
+1. Tripo API response format changed or inconsistent
+2. Model file generation succeeds but CDN upload fails
+3. API timeout before model URL becomes available
+4. Multiview images not suitable for 3D generation
+
+**Investigation Status**:
+- Added detailed debug logging to capture full Tripo API response
+- Waiting for test generation (project 480010) to complete
+- Need to review complete Tripo API response format
+
+**Recommended Fixes**:
+1. Implement retry logic with exponential backoff (3 attempts)
+2. Add fallback: if 3D fails, use placeholder or previous model
+3. Contact Tripo support for API response format clarification
+4. Consider alternative 3D generation API if Tripo proves unreliable
