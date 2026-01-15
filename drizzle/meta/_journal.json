@@ -29,6 +29,13 @@
       "when": 1768455737021,
       "tag": "0003_wild_deathbird",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1768461506898,
+      "tag": "0004_shiny_smasher",
+      "breakpoints": true
     }
   ]
 }

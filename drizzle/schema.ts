@@ -59,7 +59,7 @@ export const projects = mysqlTable("projects", {
   regenerationCount: int("regenerationCount").default(0).notNull(),
   
   // Overall project status
-  status: mysqlEnum("status", ["draft", "generating_views", "views_ready", "generating_3d", "completed", "ordered"]).default("draft").notNull(),
+  status: mysqlEnum("status", ["draft", "generating_views", "views_ready", "generating_3d", "completed", "ordered", "failed"]).default("draft").notNull(),
   
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

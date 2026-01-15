@@ -244,6 +244,9 @@ export default function Home() {
                         rows={2}
                         className="resize-none"
                       />
+                      <p className="text-xs text-muted-foreground">
+                        Note: For image-based generation, this description is saved for order reference and designer notes only. The 3D model is generated directly from your image.
+                      </p>
                     </div>
                   </TabsContent>
 

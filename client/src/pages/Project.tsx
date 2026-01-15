@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Box, Loader2, Download, RefreshCw, ArrowLeft, Send, CheckCircle, Palette, Wand2, Save, LogIn } from "lucide-react";
 import { Link, useParams, useLocation } from "wouter";
-import { useEffect, useState, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
@@ -64,7 +64,7 @@ export default function Project() {
   const [isApplyingStyle, setIsApplyingStyle] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
 
   const { data: project, isLoading, refetch } = trpc.projects.getById.useQuery(
@@ -82,20 +82,6 @@ export default function Project() {
   const saveToAccountMutation = trpc.projects.saveToAccount.useMutation();
   const createOrderMutation = trpc.orders.create.useMutation();
   const createCheckoutMutation = trpc.payment.createCheckoutSession.useMutation();
-
-  // Note: 3D generation is now auto-started by the backend when project is created
-  // No need for frontend to trigger it
-
-  const handleStartGeneration = async () => {
-    try {
-      await startGenerationMutation.mutateAsync({ projectId });
-      toast.success("3D generation started!");
-      refetch();
-      refetchStatus();
-    } catch (error: any) {
-      toast.error(error.message || "Failed to start generation");
-    }
-  };
 
   const handleRegenerate = async () => {
     if (!generationStatus?.canRegenerate) {
@@ -144,7 +130,6 @@ export default function Project() {
 
   const handleSaveProject = async () => {
     if (!isAuthenticated) {
-      // Store current project ID to redirect back after login
       localStorage.setItem('pendingSaveProjectId', projectId.toString());
       window.location.href = getLoginUrl();
       return;
@@ -175,7 +160,6 @@ export default function Project() {
 
     setIsSubmitting(true);
     try {
-      // Create order
       const orderResult = await createOrderMutation.mutateAsync({
         projectId,
         contactEmail,
@@ -183,7 +167,6 @@ export default function Project() {
         designFeedback: designFeedback || "No specific feedback",
       });
 
-      // Create checkout session
       const checkoutResult = await createCheckoutMutation.mutateAsync({
         projectId,
         orderId: orderResult.orderId,
@@ -221,15 +204,99 @@ export default function Project() {
   }
 
   const isGenerating = project.status === "generating_3d" || 
+    project.status === "draft" ||
     generationStatus?.tripoTaskStatus === "queued" || 
     generationStatus?.tripoTaskStatus === "running";
   
   const isCompleted = project.status === "completed" && project.modelUrl;
   const isOrdered = project.status === "ordered";
+  const isFailed = project.status === "failed";
 
+  // Single column layout for generating state
+  if (isGenerating) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-purple-50/30 to-amber-50/20">
+        <header className="border-b border-border/40 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
+          <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2 text-xl font-bold">
+              <Box className="h-6 w-6 text-primary" />
+              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                Figurine Studio
+              </span>
+            </Link>
+            <Link href="/history">
+              <Button variant="ghost">My Projects</Button>
+            </Link>
+          </div>
+        </header>
+
+        <main className="container mx-auto px-4 py-8">
+          <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6">
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Back to Home
+          </Link>
+
+          <div className="max-w-xl mx-auto">
+            <Card>
+              <CardContent className="pt-8 pb-8">
+                <div className="text-center space-y-6">
+                  <div className="relative">
+                    <div className="w-24 h-24 mx-auto rounded-full border-4 border-primary/20 flex items-center justify-center bg-primary/5">
+                      <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                    </div>
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold mb-2">Generating Your 3D Model</h2>
+                    <p className="text-muted-foreground">
+                      Our AI is creating a detailed 3D model based on your input.
+                    </p>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+                    <p className="text-sm font-medium">
+                      Status: {generationStatus?.tripoTaskStatus === "running" ? "Processing..." : 
+                               generationStatus?.tripoTaskStatus === "queued" ? "Queued" : "Starting..."}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Estimated time: 2-5 minutes
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Input Info */}
+            <Card className="mt-4">
+              <CardHeader>
+                <CardTitle className="text-sm">Project Input</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 text-sm">
+                  <p><span className="text-muted-foreground">Type:</span> {project.inputType.replace('_', ' ')}</p>
+                  {project.textPrompt && (
+                    <p><span className="text-muted-foreground">Description:</span> {project.textPrompt}</p>
+                  )}
+                  {project.imageUrls && project.imageUrls.length > 0 && (
+                    <div>
+                      <span className="text-muted-foreground">Images:</span>
+                      <div className="flex gap-2 mt-2">
+                        {project.imageUrls.map((url: string, i: number) => (
+                          <img key={i} src={url} alt={`Input ${i+1}`} className="w-16 h-16 object-cover rounded" />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Two column layout for completed/ordered/failed states
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-purple-50/30 to-amber-50/20">
-      {/* Header */}
       <header className="border-b border-border/40 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 text-xl font-bold">
@@ -264,7 +331,6 @@ export default function Project() {
                           variant="outline" 
                           size="sm"
                           onClick={handleRegenerate}
-                          disabled={isGenerating}
                         >
                           <RefreshCw className="h-4 w-4 mr-1" />
                           Regenerate
@@ -279,27 +345,26 @@ export default function Project() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {isGenerating ? (
-                  <div className="w-full h-[400px] flex flex-col items-center justify-center bg-muted/50 rounded-lg">
-                    <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-                    <p className="text-lg font-medium">Generating 3D Model...</p>
-                    <p className="text-sm text-muted-foreground">This may take 2-5 minutes</p>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Status: {generationStatus?.tripoTaskStatus || "Starting..."}
-                    </p>
-                  </div>
-                ) : isCompleted && project.modelUrl ? (
+                {isCompleted && project.modelUrl ? (
                   <ModelViewer modelUrl={project.modelUrl} />
+                ) : isFailed ? (
+                  <div className="w-full h-[400px] flex flex-col items-center justify-center bg-red-50 rounded-lg">
+                    <p className="text-red-600 font-medium">Generation Failed</p>
+                    <p className="text-sm text-muted-foreground mt-2">Please try again or contact support.</p>
+                    <Button className="mt-4" onClick={handleRegenerate}>
+                      <RefreshCw className="h-4 w-4 mr-1" />
+                      Retry
+                    </Button>
+                  </div>
                 ) : (
                   <div className="w-full h-[400px] flex flex-col items-center justify-center bg-muted/50 rounded-lg">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-                    <p className="text-muted-foreground">Preparing 3D generation...</p>
+                    <p className="text-muted-foreground">No model available</p>
                   </div>
                 )}
               </CardContent>
             </Card>
 
-            {/* Style/Texture Selection - Only show when model is completed */}
+            {/* Style/Texture Selection */}
             {isCompleted && (
               <Card>
                 <CardHeader>
@@ -343,7 +408,7 @@ export default function Project() {
               </Card>
             )}
 
-            {/* Save Project - Only show when model is completed and not saved */}
+            {/* Save Project */}
             {isCompleted && !project.isSaved && (
               <Card className="border-primary/30 bg-primary/5">
                 <CardContent className="pt-6">
@@ -436,7 +501,7 @@ export default function Project() {
             )}
           </div>
 
-          {/* Right: Order Form - Only show when completed or ordered */}
+          {/* Right: Order Form */}
           <div className="space-y-4">
             {isOrdered ? (
               <Card className="border-green-200 bg-green-50/50">
@@ -526,48 +591,22 @@ export default function Project() {
                   </Button>
                 </CardContent>
               </Card>
-            ) : isGenerating ? (
-              // Show generation progress on the right side
-              <Card>
+            ) : isFailed ? (
+              <Card className="border-red-200 bg-red-50/50">
                 <CardContent className="pt-6">
                   <div className="text-center space-y-4">
-                    <div className="relative">
-                      <div className="w-20 h-20 mx-auto rounded-full border-4 border-primary/20 flex items-center justify-center">
-                        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                      </div>
-                    </div>
-                    <h3 className="text-lg font-medium">Creating Your 3D Model</h3>
+                    <p className="text-red-600 font-medium">Generation Failed</p>
                     <p className="text-sm text-muted-foreground">
-                      Our AI is generating a detailed 3D model based on your input.
+                      Something went wrong during 3D model generation. Please try again.
                     </p>
-                    <div className="bg-muted/50 rounded-lg p-3">
-                      <p className="text-xs text-muted-foreground">
-                        Estimated time: 2-5 minutes
-                      </p>
-                      <p className="text-xs font-medium mt-1">
-                        Status: {generationStatus?.tripoTaskStatus === "running" ? "Processing..." : "Queued"}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              // Draft state - prompt to start generation
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="text-center space-y-4">
-                    <Box className="h-16 w-16 text-muted-foreground mx-auto" />
-                    <h3 className="text-lg font-medium">Ready to Generate</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Click the button below to start generating your 3D model.
-                    </p>
-                    <Button onClick={handleStartGeneration} size="lg">
-                      Start 3D Generation
+                    <Button onClick={handleRegenerate}>
+                      <RefreshCw className="h-4 w-4 mr-1" />
+                      Retry Generation
                     </Button>
                   </div>
                 </CardContent>
               </Card>
-            )}
+            ) : null}
           </div>
         </div>
       </main>

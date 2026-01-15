@@ -235,3 +235,14 @@
 - [x] Fix: After uploading image and clicking generate, should auto-start 3D generation (not require second click)
 - [x] Fix: Project page has two generation boxes overlapping
 - [x] Simplify flow: Create project → Auto-start 3D generation → Show result
+
+
+## Bug Fixes - User Feedback Round 5
+
+- [x] Fix: Still two dialog boxes during 3D generation ("Generating" and "Creating")
+  - Verified: Project.tsx now uses single-column layout when isGenerating=true (lines 216-294)
+  - Only ONE centered status card displays during generation
+- [x] Fix: Text description not applied to 3D model when uploading single image with text
+  - Tripo's image_to_model API does NOT support text prompts (only text_to_model does)
+  - Added UI note: "For image-based generation, this description is saved for order reference and designer notes only"
+  - Text description is saved in project.textPrompt for order/designer reference
