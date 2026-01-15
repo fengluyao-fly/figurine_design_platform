@@ -301,3 +301,23 @@
   - projects table stores modelUrl, modelKey, inputType (including user_uploaded)
 - [x] Verify order information is properly linked to projects
   - orders table has projectId foreign key, contactEmail, contactPhone, modificationFeedback
+
+## UI/UX Improvements - User Feedback Round 8
+
+### Homepage Layout Redesign
+- [x] Redesign "Already have a model" entry to be more prominent
+  - Created two side-by-side cards: "No 3D Model?" vs "Have a 3D Model?"
+- [x] Create comparison layout: "Have a model? Upload" vs "No model? Create"
+  - Both options now displayed as equal-weight cards with clear visual distinction
+- [x] Place both options together for clear user choice
+  - Grid layout with md:grid-cols-2 for side-by-side comparison
+- [x] Remove the left-side button, integrate into main card area
+  - Upload option now in dedicated card with checkmarks for features
+
+### Portfolio/Case Studies Section
+- [x] Add showcase section with figurine examples
+  - Added anime-figurine.webp, collectible-figurine.jpg, custom-figurine.jpg
+- [x] Add industrial product examples (simple designs)
+  - Added industrial-product.webp
+- [x] Display on homepage below the main creation area
+  - "Our Work" section with 4 showcase cards
