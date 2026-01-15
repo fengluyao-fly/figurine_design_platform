@@ -139,7 +139,7 @@ export default function History() {
             <div className="flex items-center gap-2 cursor-pointer">
               <Box className="h-8 w-8 text-primary" />
               <span className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                Figurine Studio
+                Maker Mart
               </span>
             </div>
           </Link>

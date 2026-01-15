@@ -91,7 +91,7 @@ export async function getUserByOpenId(openId: string) {
 // Project operations - New simplified API
 export async function createProject(data: {
   sessionId: string;
-  inputType: "text" | "single_image" | "multi_view";
+  inputType: "text" | "single_image" | "multi_view" | "user_uploaded";
   textPrompt?: string;
   imageUrls?: string[];
   imageKeys?: string[];

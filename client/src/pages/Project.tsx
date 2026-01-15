@@ -302,12 +302,17 @@ export default function Project() {
           <Link href="/" className="flex items-center gap-2 text-xl font-bold">
             <Box className="h-6 w-6 text-primary" />
             <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Figurine Studio
+              Maker Mart
             </span>
           </Link>
-          <Link href="/history">
-            <Button variant="ghost">My Projects</Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link href="/contact">
+              <Button variant="ghost">Contact Us</Button>
+            </Link>
+            <Link href="/history">
+              <Button variant="outline">My Account</Button>
+            </Link>
+          </div>
         </div>
       </header>
 

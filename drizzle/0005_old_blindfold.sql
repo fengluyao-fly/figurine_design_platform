@@ -1,0 +1,1 @@
+ALTER TABLE `projects` MODIFY COLUMN `inputType` enum('text','single_image','multi_view','user_uploaded') NOT NULL DEFAULT 'text';

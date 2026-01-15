@@ -36,6 +36,13 @@
       "when": 1768461506898,
       "tag": "0004_shiny_smasher",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1768469590488,
+      "tag": "0005_old_blindfold",
+      "breakpoints": true
     }
   ]
 }

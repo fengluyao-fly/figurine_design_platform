@@ -246,3 +246,32 @@
   - Tripo's image_to_model API does NOT support text prompts (only text_to_model does)
   - Added UI note: "For image-based generation, this description is saved for order reference and designer notes only"
   - Text description is saved in project.textPrompt for order/designer reference
+
+
+## UI/UX Improvements - User Feedback Round 6
+
+### Brand Update
+- [x] Change brand name from "Figurine Studio" to "Maker Mart"
+- [x] Update logo and brand colors throughout the site
+
+### Navigation Updates
+- [x] Add "Contact Us" button in header - links to contact page
+- [x] Add "My Account" / "Sign Up" button in header
+- [x] Logged-in users see "My Account" with access to saved models
+- [x] Non-logged-in users see "Sign Up" / "Login" option
+
+### New Feature: Upload Existing Model
+- [x] Add "Upload Your Model" option on homepage
+- [x] Support GLB, STL, and other 3D file formats
+- [x] After upload, redirect to contact form submission page
+- [x] Backend notification when user submits their own model
+- [x] Create new project type: "user_uploaded" for existing models
+
+### Simplify Image Upload Flow
+- [x] Remove text description input for single image upload
+- [x] Keep modification feedback only in 3D model preview page (after generation)
+- [x] Clarify two paths: 1) AI-generated model, 2) User-uploaded model
+
+### Contact Page
+- [x] Create Contact Us page with company contact information
+- [x] Include email, phone, and business address

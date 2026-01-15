@@ -34,7 +34,7 @@ export const projects = mysqlTable("projects", {
   sketchKey: varchar("sketchKey", { length: 512 }),
   
   // Input type: what the user provided
-  inputType: mysqlEnum("inputType", ["text", "single_image", "multi_view"]).default("text").notNull(),
+  inputType: mysqlEnum("inputType", ["text", "single_image", "multi_view", "user_uploaded"]).default("text").notNull(),
   
   // Text prompt (for text input or as description)
   textPrompt: text("textPrompt"),

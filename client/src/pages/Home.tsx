@@ -3,11 +3,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Upload, Sparkles, Box, ArrowRight, Loader2, Type, Image, Images, X } from "lucide-react";
+import { Upload, Sparkles, Box, ArrowRight, Loader2, Type, Image, Images, X, FileBox } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { getLoginUrl } from "@/const";
 
 type InputType = "text" | "single_image" | "multi_view";
 
@@ -21,6 +23,7 @@ export default function Home() {
   const multiFileInputRef = useRef<HTMLInputElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const { isAuthenticated } = useAuth();
   const createProjectMutation = trpc.projects.create.useMutation();
 
   const handleSingleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,7 +87,7 @@ export default function Home() {
     try {
       const result = await createProjectMutation.mutateAsync({
         inputType,
-        textPrompt: textPrompt.trim() || undefined,
+        textPrompt: inputType === "text" ? textPrompt.trim() : undefined,
         imageBase64: inputType === "single_image" && singleImage ? singleImage.preview : undefined,
         imageBase64Array: inputType === "multi_view" ? multiViewImages.map(img => img.preview) : undefined,
       });
@@ -108,12 +111,23 @@ export default function Home() {
           <Link href="/" className="flex items-center gap-2 text-xl font-bold">
             <Box className="h-6 w-6 text-primary" />
             <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Figurine Studio
+              Maker Mart
             </span>
           </Link>
-          <Link href="/history">
-            <Button variant="ghost">My Projects</Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link href="/contact">
+              <Button variant="ghost">Contact Us</Button>
+            </Link>
+            {isAuthenticated ? (
+              <Link href="/history">
+                <Button variant="outline">My Account</Button>
+              </Link>
+            ) : (
+              <a href={getLoginUrl()}>
+                <Button variant="outline">Sign Up / Login</Button>
+              </a>
+            )}
+          </div>
         </div>
       </header>
 
@@ -150,6 +164,17 @@ export default function Home() {
                   <div className="text-3xl font-bold text-primary">24h</div>
                   <div className="text-sm text-muted-foreground">Expert Review</div>
                 </div>
+              </div>
+
+              {/* Already have a model? */}
+              <div className="pt-4 border-t border-border/40">
+                <Link href="/upload-model">
+                  <Button variant="outline" className="w-full sm:w-auto gap-2">
+                    <FileBox className="h-5 w-5" />
+                    Already have a 3D model? Upload it here
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
               </div>
             </div>
 
@@ -189,7 +214,7 @@ export default function Home() {
                     </div>
                   </TabsContent>
 
-                  {/* Single Image Input */}
+                  {/* Single Image Input - No text description */}
                   <TabsContent value="single_image" className="space-y-4 mt-4">
                     <div className="space-y-2">
                       <Label className="text-base font-semibold">Upload Reference Image</Label>
@@ -232,20 +257,8 @@ export default function Home() {
                         onChange={handleSingleFileSelect}
                         className="hidden"
                       />
-                    </div>
-                    
-                    {/* Optional text prompt for single image */}
-                    <div className="space-y-2">
-                      <Label className="text-sm">Additional Description (Optional)</Label>
-                      <Textarea
-                        placeholder="Add details or modifications..."
-                        value={textPrompt}
-                        onChange={(e) => setTextPrompt(e.target.value)}
-                        rows={2}
-                        className="resize-none"
-                      />
                       <p className="text-xs text-muted-foreground">
-                        Note: For image-based generation, this description is saved for order reference and designer notes only. The 3D model is generated directly from your image.
+                        Your image will be converted to a 3D model. You can provide modification feedback after generation.
                       </p>
                     </div>
                   </TabsContent>
@@ -393,7 +406,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-border/40 py-8 px-4 bg-background/50">
         <div className="container text-center text-sm text-muted-foreground">
-          <p>© 2026 Figurine Studio. AI-powered 3D model generation.</p>
+          <p>© 2026 Maker Mart. AI-powered 3D model generation for manufacturing.</p>
         </div>
       </footer>
     </div>

@@ -13,7 +13,7 @@ export default function OrderSuccess() {
             <div className="flex items-center gap-2 cursor-pointer">
               <Box className="h-8 w-8 text-primary" />
               <span className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                FigurineForge
+                Maker Mart
               </span>
             </div>
           </Link>
@@ -100,8 +100,8 @@ export default function OrderSuccess() {
             <div className="text-center pt-4 border-t">
               <p className="text-sm text-muted-foreground">
                 Questions? Contact us at{" "}
-                <a href="mailto:support@figurineforge.com" className="text-primary hover:underline">
-                  support@figurineforge.com
+                <a href="mailto:contact@makermart.com" className="text-primary hover:underline">
+                  contact@makermart.com
                 </a>
               </p>
             </div>

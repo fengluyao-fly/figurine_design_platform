@@ -168,6 +168,69 @@ export const appRouter = router({
           isSaved: true,
         }));
       }),
+    
+    // Upload existing 3D model (user already has a model)
+    uploadExistingModel: publicProcedure
+      .input(z.object({
+        modelBase64: z.string(),
+        fileName: z.string(),
+        contactEmail: z.string().email(),
+        contactPhone: z.string().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const sessionId = ctx.req.cookies?.['figurine_session'] || nanoid();
+        
+        // Upload model to S3
+        const base64Data = input.modelBase64.split(',')[1] || input.modelBase64;
+        const buffer = Buffer.from(base64Data, 'base64');
+        const extension = input.fileName.split('.').pop()?.toLowerCase() || 'glb';
+        const mimeType = extension === 'stl' ? 'model/stl' : 
+                         extension === 'obj' ? 'model/obj' :
+                         extension === 'fbx' ? 'application/octet-stream' :
+                         'model/gltf-binary';
+        
+        const modelKey = `user-models/${sessionId}/${nanoid()}.${extension}`;
+        const { url: modelUrl } = await storagePut(modelKey, buffer, mimeType);
+        
+        // Create project with user_uploaded type
+        const projectId = await createProject({
+          sessionId,
+          inputType: "user_uploaded",
+          textPrompt: input.notes,
+        });
+        
+        // Update project with model URL
+        await updateProject(projectId, {
+          status: "completed",
+          modelUrl,
+          modelKey,
+        });
+        
+        // Create order immediately
+        const orderId = await createOrder({
+          projectId,
+          contactEmail: input.contactEmail,
+          contactPhone: input.contactPhone,
+          modificationFeedback: input.notes || "User uploaded existing model",
+          paymentStatus: "pending",
+        });
+        
+        // Update project status
+        await updateProject(projectId, { status: "ordered" });
+        
+        // Set session cookie
+        ctx.res.cookie('figurine_session', sessionId, {
+          httpOnly: true,
+          secure: ctx.req.protocol === 'https',
+          sameSite: 'lax',
+          maxAge: 365 * 24 * 60 * 60 * 1000,
+        });
+        
+        console.log(`[Upload] User uploaded model for project ${projectId}, order ${orderId}`);
+        
+        return { projectId, orderId, success: true };
+      }),
   }),
 
   generate: router({
