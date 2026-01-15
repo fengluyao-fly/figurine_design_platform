@@ -228,3 +228,10 @@
 ### Updated Requirements (User Feedback)
 - [x] Image upload: allow text description alongside image for better 3D generation
 - [x] Remove four-view generation option (user decision - simplify flow)
+
+
+## Bug Fixes - User Feedback Round 3
+
+- [x] Fix: After uploading image and clicking generate, should auto-start 3D generation (not require second click)
+- [x] Fix: Project page has two generation boxes overlapping
+- [x] Simplify flow: Create project → Auto-start 3D generation → Show result

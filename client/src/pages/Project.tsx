@@ -83,12 +83,8 @@ export default function Project() {
   const createOrderMutation = trpc.orders.create.useMutation();
   const createCheckoutMutation = trpc.payment.createCheckoutSession.useMutation();
 
-  // Auto-start generation for new projects
-  useEffect(() => {
-    if (project && project.status === "draft" && !generationStatus?.tripoTaskStatus) {
-      handleStartGeneration();
-    }
-  }, [project?.id]);
+  // Note: 3D generation is now auto-started by the backend when project is created
+  // No need for frontend to trigger it
 
   const handleStartGeneration = async () => {
     try {
@@ -296,10 +292,8 @@ export default function Project() {
                   <ModelViewer modelUrl={project.modelUrl} />
                 ) : (
                   <div className="w-full h-[400px] flex flex-col items-center justify-center bg-muted/50 rounded-lg">
-                    <p className="text-muted-foreground mb-4">No model generated yet</p>
-                    <Button onClick={handleStartGeneration}>
-                      Start Generation
-                    </Button>
+                    <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+                    <p className="text-muted-foreground">Preparing 3D generation...</p>
                   </div>
                 )}
               </CardContent>

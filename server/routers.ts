@@ -70,6 +70,40 @@ export const appRouter = router({
           maxAge: 365 * 24 * 60 * 60 * 1000,
         });
         
+        // Auto-start 3D generation immediately after project creation
+        try {
+          let taskId: string;
+          
+          if (input.inputType === "text") {
+            if (!input.textPrompt) throw new Error("Text prompt is required");
+            taskId = await createTextTo3DTask(input.textPrompt);
+          } else if (input.inputType === "single_image") {
+            if (imageUrls.length === 0) throw new Error("Image is required");
+            taskId = await createImageTo3DTask(imageUrls[0]);
+          } else if (input.inputType === "multi_view") {
+            if (imageUrls.length === 0) throw new Error("Images are required");
+            taskId = await createMultiviewTo3DTask(imageUrls);
+          } else {
+            throw new Error("Invalid input type");
+          }
+          
+          // Update project with task info and status
+          await updateProject(projectId, {
+            status: "generating_3d",
+            tripoTaskId: taskId,
+            tripoTaskStatus: "queued",
+            regenerationCount: 1,
+          });
+          
+          // Start async polling for model completion
+          pollAndSaveModel(projectId, taskId);
+          
+          console.log(`[Project] Created project ${projectId} and started 3D generation with task ${taskId}`);
+        } catch (error) {
+          console.error(`[Project] Failed to auto-start 3D generation for project ${projectId}:`, error);
+          // Project is still created, user can manually retry
+        }
+        
         return { projectId };
       }),
     

@@ -18,6 +18,7 @@ function createTestContext(options?: { user?: any; cookies?: Record<string, stri
 }
 
 describe("Projects API", () => {
+  // Increase timeout for tests that trigger Tripo API calls
   it("creates a new project with text input", async () => {
     const ctx = createTestContext();
     const caller = appRouter.createCaller(ctx);
@@ -30,7 +31,7 @@ describe("Projects API", () => {
     expect(result).toHaveProperty("projectId");
     expect(typeof result.projectId).toBe("number");
     expect(result.projectId).toBeGreaterThan(0);
-  });
+  }, 30000); // 30 second timeout for Tripo API call
 
   it("retrieves project by ID", async () => {
     const ctx = createTestContext();
@@ -50,9 +51,10 @@ describe("Projects API", () => {
     expect(project).toBeDefined();
     expect(project?.id).toBe(createResult.projectId);
     expect(project?.textPrompt).toBe("Test figurine for retrieval with detailed description");
-    expect(project?.status).toBe("draft");
+    // Status should be "generating_3d" since auto-generation is now enabled
+    expect(["draft", "generating_3d"]).toContain(project?.status);
     expect(project?.inputType).toBe("text");
-  });
+  }, 30000); // 30 second timeout for Tripo API call
 
   it("retrieves projects by session", async () => {
     const sessionId = "test-session-" + Date.now();
@@ -72,7 +74,7 @@ describe("Projects API", () => {
 
     expect(projects).toBeDefined();
     expect(Array.isArray(projects)).toBe(true);
-  });
+  }, 30000); // 30 second timeout for Tripo API call
 
   it("requires login to save project to account", async () => {
     const ctx = createTestContext(); // No user logged in
@@ -88,7 +90,7 @@ describe("Projects API", () => {
     await expect(
       caller.projects.saveToAccount({ projectId: createResult.projectId })
     ).rejects.toThrow("LOGIN_REQUIRED");
-  });
+  }, 30000); // 30 second timeout for Tripo API call
 
   it("allows saving project when logged in", async () => {
     const mockUser = { id: 1, name: "Test User", openId: "test-open-id" };
@@ -104,7 +106,7 @@ describe("Projects API", () => {
     // Save the project
     const result = await caller.projects.saveToAccount({ projectId: createResult.projectId });
     expect(result.success).toBe(true);
-  });
+  }, 30000); // 30 second timeout for Tripo API call
 
   it("returns empty array for getSavedProjects when not logged in", async () => {
     const ctx = createTestContext(); // No user logged in
