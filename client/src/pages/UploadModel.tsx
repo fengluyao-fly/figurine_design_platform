@@ -3,7 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Box, Upload, ArrowLeft, Loader2, Send, CheckCircle } from "lucide-react";
+import { Box, Upload, Loader2, Send, CheckCircle } from "lucide-react";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { getLoginUrl } from "@/const";
 import { Link, useLocation } from "wouter";
 import { useState, useRef } from "react";
 import { trpc } from "@/lib/trpc";
@@ -11,6 +13,7 @@ import { toast } from "sonner";
 
 export default function UploadModel() {
   const [, setLocation] = useLocation();
+  const { isAuthenticated } = useAuth();
   const [modelFile, setModelFile] = useState<{ file: File; name: string } | null>(null);
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
@@ -94,6 +97,26 @@ export default function UploadModel() {
                 Maker Mart
               </span>
             </Link>
+            <nav className="flex items-center gap-1 sm:gap-2">
+              <Link href="/about">
+                <Button variant="ghost" size="sm">About Us</Button>
+              </Link>
+              <Link href="/">
+                <Button variant="ghost" size="sm">Make Your Product</Button>
+              </Link>
+              <Link href="/contact">
+                <Button variant="ghost" size="sm">Contact Us</Button>
+              </Link>
+              {isAuthenticated ? (
+                <Link href="/history">
+                  <Button variant="outline" size="sm">My Account</Button>
+                </Link>
+              ) : (
+                <a href={getLoginUrl()}>
+                  <Button variant="outline" size="sm">Sign Up</Button>
+                </a>
+              )}
+            </nav>
           </div>
         </header>
 
@@ -128,24 +151,31 @@ export default function UploadModel() {
               Maker Mart
             </span>
           </Link>
-          <div className="flex items-center gap-2">
+          <nav className="flex items-center gap-1 sm:gap-2">
+            <Link href="/about">
+              <Button variant="ghost" size="sm">About Us</Button>
+            </Link>
+            <Link href="/">
+              <Button variant="ghost" size="sm">Make Your Product</Button>
+            </Link>
             <Link href="/contact">
-              <Button variant="ghost">Contact Us</Button>
+              <Button variant="ghost" size="sm">Contact Us</Button>
             </Link>
-            <Link href="/history">
-              <Button variant="outline">My Account</Button>
-            </Link>
-          </div>
+            {isAuthenticated ? (
+              <Link href="/history">
+                <Button variant="outline" size="sm">My Account</Button>
+              </Link>
+            ) : (
+              <a href={getLoginUrl()}>
+                <Button variant="outline" size="sm">Sign Up</Button>
+              </a>
+            )}
+          </nav>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="flex-1 container mx-auto px-4 py-12">
-        <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-8">
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          Back to Home
-        </Link>
-
         <div className="max-w-xl mx-auto">
           <h1 className="text-3xl font-bold mb-2 text-center">Upload Your 3D Model</h1>
           <p className="text-muted-foreground text-center mb-8">

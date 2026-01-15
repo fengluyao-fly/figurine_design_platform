@@ -321,3 +321,17 @@
   - Added industrial-product.webp
 - [x] Display on homepage below the main creation area
   - "Our Work" section with 4 showcase cards
+
+## Navigation & About Us - User Feedback Round 9
+
+### Navigation Bar Update
+- [x] Update navigation to 4 items: About Us, Make Your Product, Contact Us, My Account/Sign Up
+- [x] Apply consistent navigation across all pages
+  - Updated: Home, About, Contact, Project, History, UploadModel, OrderSuccess
+
+### About Us Page
+- [x] Create About Us page with company introduction
+- [x] Include AI-in-manufacture company description
+- [x] Explain value proposition for small batch production (100-20,000 units)
+  - Visual comparison: <100 (3D print), 100-20K (Maker Mart sweet spot), >20K (direct factory)
+- [x] Highlight Maker Mart's role in bridging design and manufacturing

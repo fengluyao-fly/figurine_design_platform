@@ -221,12 +221,29 @@ export default function Project() {
             <Link href="/" className="flex items-center gap-2 text-xl font-bold">
               <Box className="h-6 w-6 text-primary" />
               <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                Figurine Studio
+                Maker Mart
               </span>
             </Link>
-            <Link href="/history">
-              <Button variant="ghost">My Projects</Button>
-            </Link>
+            <nav className="flex items-center gap-1 sm:gap-2">
+              <Link href="/about">
+                <Button variant="ghost" size="sm">About Us</Button>
+              </Link>
+              <Link href="/">
+                <Button variant="ghost" size="sm">Make Your Product</Button>
+              </Link>
+              <Link href="/contact">
+                <Button variant="ghost" size="sm">Contact Us</Button>
+              </Link>
+              {isAuthenticated ? (
+                <Link href="/history">
+                  <Button variant="outline" size="sm">My Account</Button>
+                </Link>
+              ) : (
+                <a href={getLoginUrl()}>
+                  <Button variant="outline" size="sm">Sign Up</Button>
+                </a>
+              )}
+            </nav>
           </div>
         </header>
 
@@ -305,22 +322,30 @@ export default function Project() {
               Maker Mart
             </span>
           </Link>
-          <div className="flex items-center gap-2">
+          <nav className="flex items-center gap-1 sm:gap-2">
+            <Link href="/about">
+              <Button variant="ghost" size="sm">About Us</Button>
+            </Link>
+            <Link href="/">
+              <Button variant="ghost" size="sm">Make Your Product</Button>
+            </Link>
             <Link href="/contact">
-              <Button variant="ghost">Contact Us</Button>
+              <Button variant="ghost" size="sm">Contact Us</Button>
             </Link>
-            <Link href="/history">
-              <Button variant="outline">My Account</Button>
-            </Link>
-          </div>
+            {isAuthenticated ? (
+              <Link href="/history">
+                <Button variant="outline" size="sm">My Account</Button>
+              </Link>
+            ) : (
+              <a href={getLoginUrl()}>
+                <Button variant="outline" size="sm">Sign Up</Button>
+              </a>
+            )}
+          </nav>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6">
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          Back to Home
-        </Link>
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Left: 3D Model Viewer */}

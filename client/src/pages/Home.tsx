@@ -140,20 +140,26 @@ export default function Home() {
               Maker Mart
             </span>
           </Link>
-          <div className="flex items-center gap-2">
+          <nav className="flex items-center gap-1 sm:gap-2">
+            <Link href="/about">
+              <Button variant="ghost" size="sm">About Us</Button>
+            </Link>
+            <Link href="/">
+              <Button variant="ghost" size="sm" className="text-primary">Make Your Product</Button>
+            </Link>
             <Link href="/contact">
-              <Button variant="ghost">Contact Us</Button>
+              <Button variant="ghost" size="sm">Contact Us</Button>
             </Link>
             {isAuthenticated ? (
               <Link href="/history">
-                <Button variant="outline">My Account</Button>
+                <Button variant="outline" size="sm">My Account</Button>
               </Link>
             ) : (
               <a href={getLoginUrl()}>
-                <Button variant="outline">Sign Up / Login</Button>
+                <Button variant="outline" size="sm">Sign Up</Button>
               </a>
             )}
-          </div>
+          </nav>
         </div>
       </header>
 

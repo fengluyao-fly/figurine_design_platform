@@ -1,9 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Box, Mail, Phone, MapPin, ArrowLeft } from "lucide-react";
+import { Box, Mail, Phone, MapPin } from "lucide-react";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { getLoginUrl } from "@/const";
 import { Link } from "wouter";
 
 export default function Contact() {
+  const { isAuthenticated } = useAuth();
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-purple-50/30 to-amber-50/20">
       {/* Header */}
@@ -15,24 +19,31 @@ export default function Contact() {
               Maker Mart
             </span>
           </Link>
-          <div className="flex items-center gap-2">
+          <nav className="flex items-center gap-1 sm:gap-2">
+            <Link href="/about">
+              <Button variant="ghost" size="sm">About Us</Button>
+            </Link>
+            <Link href="/">
+              <Button variant="ghost" size="sm">Make Your Product</Button>
+            </Link>
             <Link href="/contact">
-              <Button variant="ghost">Contact Us</Button>
+              <Button variant="ghost" size="sm" className="text-primary">Contact Us</Button>
             </Link>
-            <Link href="/history">
-              <Button variant="outline">My Account</Button>
-            </Link>
-          </div>
+            {isAuthenticated ? (
+              <Link href="/history">
+                <Button variant="outline" size="sm">My Account</Button>
+              </Link>
+            ) : (
+              <a href={getLoginUrl()}>
+                <Button variant="outline" size="sm">Sign Up</Button>
+              </a>
+            )}
+          </nav>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="flex-1 container mx-auto px-4 py-12">
-        <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-8">
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          Back to Home
-        </Link>
-
         <div className="max-w-2xl mx-auto">
           <h1 className="text-3xl font-bold mb-8 text-center">Contact Us</h1>
           

@@ -2,8 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, Box, ArrowRight } from "lucide-react";
 import { Link } from "wouter";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { getLoginUrl } from "@/const";
 
 export default function OrderSuccess() {
+  const { isAuthenticated } = useAuth();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-purple-50/30 to-amber-50/20">
       {/* Navigation */}
@@ -17,6 +21,26 @@ export default function OrderSuccess() {
               </span>
             </div>
           </Link>
+          <nav className="flex items-center gap-1 sm:gap-2">
+            <Link href="/about">
+              <Button variant="ghost" size="sm">About Us</Button>
+            </Link>
+            <Link href="/">
+              <Button variant="ghost" size="sm">Make Your Product</Button>
+            </Link>
+            <Link href="/contact">
+              <Button variant="ghost" size="sm">Contact Us</Button>
+            </Link>
+            {isAuthenticated ? (
+              <Link href="/history">
+                <Button variant="outline" size="sm">My Account</Button>
+              </Link>
+            ) : (
+              <a href={getLoginUrl()}>
+                <Button variant="outline" size="sm">Sign Up</Button>
+              </a>
+            )}
+          </nav>
         </div>
       </nav>
 

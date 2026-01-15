@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Box, ArrowLeft, Loader2, Eye, Save, LogIn, User } from "lucide-react";
+import { Box, Loader2, Eye, Save, LogIn, User } from "lucide-react";
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { format } from "date-fns";
@@ -143,29 +143,31 @@ export default function History() {
               </span>
             </div>
           </Link>
-          <div className="flex items-center gap-4">
+          <nav className="flex items-center gap-1 sm:gap-2">
+            <Link href="/about">
+              <Button variant="ghost" size="sm">About Us</Button>
+            </Link>
+            <Link href="/">
+              <Button variant="ghost" size="sm">Make Your Product</Button>
+            </Link>
+            <Link href="/contact">
+              <Button variant="ghost" size="sm">Contact Us</Button>
+            </Link>
             {isAuthenticated ? (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <User className="h-4 w-4" />
-                <span>{user?.name || user?.email || "User"}</span>
-              </div>
+              <Button variant="outline" size="sm" className="text-primary">
+                <User className="h-4 w-4 mr-1" />
+                {user?.name || "My Account"}
+              </Button>
             ) : (
               <Button 
                 variant="outline" 
                 size="sm"
                 onClick={() => window.location.href = getLoginUrl()}
               >
-                <LogIn className="mr-2 h-4 w-4" />
-                Login
+                Sign Up
               </Button>
             )}
-            <Link href="/">
-              <Button variant="ghost">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Home
-              </Button>
-            </Link>
-          </div>
+          </nav>
         </div>
       </nav>
 

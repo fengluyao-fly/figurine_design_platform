@@ -10,6 +10,7 @@ import History from "./pages/History";
 import OrderSuccess from "./pages/OrderSuccess";
 import Contact from "./pages/Contact";
 import UploadModel from "./pages/UploadModel";
+import About from "./pages/About";
 
 function Router() {
   return (
@@ -20,6 +21,7 @@ function Router() {
       <Route path="/order-success" component={OrderSuccess} />
       <Route path="/contact" component={Contact} />
       <Route path="/upload-model" component={UploadModel} />
+      <Route path="/about" component={About} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
