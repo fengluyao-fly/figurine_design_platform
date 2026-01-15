@@ -9,6 +9,7 @@ import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
 import Stripe from "stripe";
 import { PRODUCTS } from "./products";
+import { notifyNewOrder, notifyModelUpload, notifyPaymentReceived } from "./notification";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-12-15.clover",
@@ -229,6 +230,24 @@ export const appRouter = router({
         
         console.log(`[Upload] User uploaded model for project ${projectId}, order ${orderId}`);
         
+        // Send notification to admin
+        await notifyModelUpload({
+          projectId,
+          fileName: input.fileName,
+          contactEmail: input.contactEmail,
+          contactPhone: input.contactPhone,
+          notes: input.notes,
+        });
+        
+        await notifyNewOrder({
+          orderId,
+          projectId,
+          contactEmail: input.contactEmail,
+          contactPhone: input.contactPhone,
+          feedback: input.notes,
+          isUserUploaded: true,
+        });
+        
         return { projectId, orderId, success: true };
       }),
   }),
@@ -372,6 +391,16 @@ export const appRouter = router({
         });
         
         await updateProject(input.projectId, { status: "ordered" });
+        
+        // Send notification to admin
+        await notifyNewOrder({
+          orderId,
+          projectId: input.projectId,
+          contactEmail: input.contactEmail,
+          contactPhone: input.contactPhone,
+          feedback: input.designFeedback,
+          isUserUploaded: false,
+        });
         
         return { orderId };
       }),

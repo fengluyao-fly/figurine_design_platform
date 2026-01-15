@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Stripe from "stripe";
 import { updateOrderPaymentStatus } from "./db";
+import { notifyPaymentReceived } from "./notification";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-12-15.clover",
@@ -52,6 +53,16 @@ export async function handleStripeWebhook(req: Request, res: Response) {
             session.payment_intent as string
           );
           console.log(`[Webhook] Updated order ${orderId} to paid`);
+          
+          // Send payment notification
+          const projectId = session.metadata?.project_id;
+          await notifyPaymentReceived({
+            orderId: parseInt(orderId),
+            projectId: projectId ? parseInt(projectId) : 0,
+            amount: session.amount_total || 0,
+            currency: session.currency || "usd",
+            customerEmail: session.customer_email || session.metadata?.customer_email || "",
+          });
         }
         break;
       }

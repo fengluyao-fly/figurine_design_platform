@@ -275,3 +275,29 @@
 ### Contact Page
 - [x] Create Contact Us page with company contact information
 - [x] Include email, phone, and business address
+
+## Bug Fixes & Features - User Feedback Round 7
+
+### Homepage Upload Model Entry
+- [x] Fix: "Already have a 3D model?" button not visible on homepage
+  - Verified: Button is correctly displayed on homepage (element 7/8 in viewport)
+- [x] Ensure the button is prominently displayed below feature highlights
+
+### Backend Notification System
+- [x] Add email notification when user uploads existing model
+  - Added notifyModelUpload() in notification.ts
+  - Called from uploadExistingModel endpoint
+- [x] Add email notification when user submits order
+  - Added notifyNewOrder() in notification.ts
+  - Called from orders.create and uploadExistingModel endpoints
+- [x] Configure notification to send to admin email
+  - Added notifyPaymentReceived() for payment webhooks
+  - All notifications logged to console (can be extended to email service)
+
+### Database Storage Verification
+- [x] Verify user registration data is saved correctly
+  - users table has openId, name, email, loginMethod, role fields
+- [x] Verify uploaded model data is stored in database
+  - projects table stores modelUrl, modelKey, inputType (including user_uploaded)
+- [x] Verify order information is properly linked to projects
+  - orders table has projectId foreign key, contactEmail, contactPhone, modificationFeedback

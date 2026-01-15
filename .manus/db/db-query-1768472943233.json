@@ -1,0 +1,50 @@
+{
+  "query": "SELECT id, sessionId, inputType, status, modelUrl, createdAt FROM projects ORDER BY id DESC LIMIT 5; SELECT id, projectId, contactEmail, paymentStatus, createdAt FROM orders ORDER BY id DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 31pJVL3gZeDmKMR.root --database MMPeiPEYV4xzt6Po2BN4fh --execute SELECT id, sessionId, inputType, status, modelUrl, createdAt FROM projects ORDER BY id DESC LIMIT 5; SELECT id, projectId, contactEmail, paymentStatus, createdAt FROM orders ORDER BY id DESC LIMIT 5;",
+  "rows": [
+    {
+      "id": "720005",
+      "sessionId": "gtPsHAJAXag3Vfmr9S-8J",
+      "inputType": "text",
+      "status": "generating_3d",
+      "modelUrl": "NULL",
+      "createdAt": "2026-01-15 09:36:42"
+    },
+    {
+      "id": "720004",
+      "sessionId": "DaqaV4qBjvD4lp3rCmmTH",
+      "inputType": "text",
+      "status": "generating_3d",
+      "modelUrl": "NULL",
+      "createdAt": "2026-01-15 09:36:40"
+    },
+    {
+      "id": "720003",
+      "sessionId": "test-session-1768469795665",
+      "inputType": "text",
+      "status": "generating_3d",
+      "modelUrl": "NULL",
+      "createdAt": "2026-01-15 09:36:35"
+    },
+    {
+      "id": "720002",
+      "sessionId": "iYS4FL4xIbvxAt4XG3ZAe",
+      "inputType": "text",
+      "status": "generating_3d",
+      "modelUrl": "NULL",
+      "createdAt": "2026-01-15 09:36:33"
+    },
+    {
+      "id": "720001",
+      "sessionId": "RiGFu1oZEQZdyt0GC3p0U",
+      "inputType": "text",
+      "status": "generating_3d",
+      "modelUrl": "NULL",
+      "createdAt": "2026-01-15 09:36:28"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tsessionId\tinputType\tstatus\tmodelUrl\tcreatedAt\n720005\tgtPsHAJAXag3Vfmr9S-8J\ttext\tgenerating_3d\tNULL\t2026-01-15 09:36:42\n720004\tDaqaV4qBjvD4lp3rCmmTH\ttext\tgenerating_3d\tNULL\t2026-01-15 09:36:40\n720003\ttest-session-1768469795665\ttext\tgenerating_3d\tNULL\t2026-01-15 09:36:35\n720002\tiYS4FL4xIbvxAt4XG3ZAe\ttext\tgenerating_3d\tNULL\t2026-01-15 09:36:33\n720001\tRiGFu1oZEQZdyt0GC3p0U\ttext\tgenerating_3d\tNULL\t2026-01-15 09:36:28\n",
+  "stderr": "",
+  "execution_time_ms": 1848
+}
