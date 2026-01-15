@@ -3,9 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Box, Loader2, Download, RefreshCw, ArrowLeft, Send, CheckCircle } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Box, Loader2, Download, RefreshCw, ArrowLeft, Send, CheckCircle, Palette, Wand2, Save, LogIn } from "lucide-react";
 import { Link, useParams, useLocation } from "wouter";
-import { useEffect, useRef, useState, Suspense } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Canvas } from "@react-three/fiber";
@@ -40,15 +43,29 @@ function ModelViewer({ modelUrl }: { modelUrl: string }) {
   );
 }
 
+// Tripo texture/style options
+const TEXTURE_STYLES = [
+  { value: "default", label: "Default" },
+  { value: "cartoon", label: "Cartoon Style" },
+  { value: "realistic", label: "Realistic" },
+  { value: "clay", label: "Clay/Matte" },
+  { value: "metallic", label: "Metallic" },
+];
+
 export default function Project() {
   const params = useParams<{ id: string }>();
   const projectId = parseInt(params.id || "0");
-  const [, setLocation] = useLocation();
   
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [designFeedback, setDesignFeedback] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedStyle, setSelectedStyle] = useState("default");
+  const [isApplyingStyle, setIsApplyingStyle] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  
+  const { isAuthenticated, user } = useAuth();
+  const [, setLocation] = useLocation();
 
   const { data: project, isLoading, refetch } = trpc.projects.getById.useQuery(
     { id: projectId },
@@ -61,6 +78,8 @@ export default function Project() {
   );
 
   const startGenerationMutation = trpc.generate.start3DGeneration.useMutation();
+  const applyStyleMutation = trpc.generate.applyStyle.useMutation();
+  const saveToAccountMutation = trpc.projects.saveToAccount.useMutation();
   const createOrderMutation = trpc.orders.create.useMutation();
   const createCheckoutMutation = trpc.payment.createCheckoutSession.useMutation();
 
@@ -98,6 +117,25 @@ export default function Project() {
     }
   };
 
+  const handleApplyStyle = async () => {
+    if (selectedStyle === "default") {
+      toast.info("Default style is already applied");
+      return;
+    }
+    
+    setIsApplyingStyle(true);
+    try {
+      await applyStyleMutation.mutateAsync({ projectId, style: selectedStyle });
+      toast.success("Applying style transformation...");
+      refetch();
+      refetchStatus();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to apply style");
+    } finally {
+      setIsApplyingStyle(false);
+    }
+  };
+
   const handleDownload = () => {
     if (project?.modelUrl) {
       const link = document.createElement('a');
@@ -105,6 +143,31 @@ export default function Project() {
       link.download = `figurine-${projectId}.glb`;
       link.click();
       toast.success("Download started!");
+    }
+  };
+
+  const handleSaveProject = async () => {
+    if (!isAuthenticated) {
+      // Store current project ID to redirect back after login
+      localStorage.setItem('pendingSaveProjectId', projectId.toString());
+      window.location.href = getLoginUrl();
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await saveToAccountMutation.mutateAsync({ projectId });
+      toast.success("Project saved to your account!");
+      refetch();
+    } catch (error: any) {
+      if (error.message === "LOGIN_REQUIRED") {
+        localStorage.setItem('pendingSaveProjectId', projectId.toString());
+        window.location.href = getLoginUrl();
+      } else {
+        toast.error(error.message || "Failed to save project");
+      }
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -242,6 +305,100 @@ export default function Project() {
               </CardContent>
             </Card>
 
+            {/* Style/Texture Selection - Only show when model is completed */}
+            {isCompleted && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-sm">
+                    <Palette className="h-4 w-4" />
+                    Style & Texture
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex gap-3">
+                    <Select value={selectedStyle} onValueChange={setSelectedStyle}>
+                      <SelectTrigger className="flex-1">
+                        <SelectValue placeholder="Select style" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {TEXTURE_STYLES.map(style => (
+                          <SelectItem key={style.value} value={style.value}>
+                            {style.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button 
+                      onClick={handleApplyStyle} 
+                      disabled={isApplyingStyle || selectedStyle === "default"}
+                    >
+                      {isApplyingStyle ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Wand2 className="h-4 w-4 mr-1" />
+                          Apply
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Transform your model's appearance with different texture styles.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Save Project - Only show when model is completed and not saved */}
+            {isCompleted && !project.isSaved && (
+              <Card className="border-primary/30 bg-primary/5">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-medium">Save to Your Account</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {isAuthenticated 
+                          ? "Save this project to access it later" 
+                          : "Login to save and access your projects anytime"
+                        }
+                      </p>
+                    </div>
+                    <Button 
+                      onClick={handleSaveProject}
+                      disabled={isSaving}
+                      variant={isAuthenticated ? "default" : "outline"}
+                    >
+                      {isSaving ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : isAuthenticated ? (
+                        <>
+                          <Save className="h-4 w-4 mr-1" />
+                          Save Project
+                        </>
+                      ) : (
+                        <>
+                          <LogIn className="h-4 w-4 mr-1" />
+                          Login to Save
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
+            {/* Saved indicator */}
+            {project.isSaved && (
+              <Card className="border-green-500/30 bg-green-50">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 text-green-700">
+                    <CheckCircle className="h-5 w-5" />
+                    <span className="font-medium">Project saved to your account</span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Input Info */}
             <Card>
               <CardHeader>
@@ -266,9 +423,26 @@ export default function Project() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Regeneration Info */}
+            {isCompleted && generationStatus && (
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Regenerations used:</span>
+                    <span>{generationStatus.regenerationCount} / 2</span>
+                  </div>
+                  {!generationStatus.canRegenerate && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      You've reached the maximum number of regenerations. Submit your order and our team can make further adjustments.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </div>
 
-          {/* Right: Order Form */}
+          {/* Right: Order Form - Only show when completed or ordered */}
           <div className="space-y-4">
             {isOrdered ? (
               <Card className="border-green-200 bg-green-50/50">
@@ -358,33 +532,45 @@ export default function Project() {
                   </Button>
                 </CardContent>
               </Card>
-            ) : (
+            ) : isGenerating ? (
+              // Show generation progress on the right side
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-center space-y-4">
-                    <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
-                    <h3 className="text-lg font-medium">Generating Your 3D Model</h3>
+                    <div className="relative">
+                      <div className="w-20 h-20 mx-auto rounded-full border-4 border-primary/20 flex items-center justify-center">
+                        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                      </div>
+                    </div>
+                    <h3 className="text-lg font-medium">Creating Your 3D Model</h3>
                     <p className="text-sm text-muted-foreground">
-                      Please wait while we create your 3D model. This usually takes 2-5 minutes.
+                      Our AI is generating a detailed 3D model based on your input.
                     </p>
+                    <div className="bg-muted/50 rounded-lg p-3">
+                      <p className="text-xs text-muted-foreground">
+                        Estimated time: 2-5 minutes
+                      </p>
+                      <p className="text-xs font-medium mt-1">
+                        Status: {generationStatus?.tripoTaskStatus === "running" ? "Processing..." : "Queued"}
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
-            )}
-
-            {/* Regeneration Info */}
-            {isCompleted && generationStatus && (
+            ) : (
+              // Draft state - prompt to start generation
               <Card>
                 <CardContent className="pt-6">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Regenerations used:</span>
-                    <span>{generationStatus.regenerationCount} / 2</span>
-                  </div>
-                  {!generationStatus.canRegenerate && (
-                    <p className="text-xs text-muted-foreground mt-2">
-                      You've reached the maximum number of regenerations. Submit your order and our team can make further adjustments.
+                  <div className="text-center space-y-4">
+                    <Box className="h-16 w-16 text-muted-foreground mx-auto" />
+                    <h3 className="text-lg font-medium">Ready to Generate</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Click the button below to start generating your 3D model.
                     </p>
-                  )}
+                    <Button onClick={handleStartGeneration} size="lg">
+                      Start 3D Generation
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             )}

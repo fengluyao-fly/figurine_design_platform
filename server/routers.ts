@@ -3,8 +3,8 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { z } from "zod";
-import { createProject, getProjectById, getProjectsBySession, updateProject, createOrder, getOrderByProject } from "./db";
-import { createTextTo3DTask, createImageTo3DTask, createMultiviewTo3DTask, waitForTaskCompletion, getModelUrlFromResult } from "./tripo";
+import { createProject, getProjectById, getProjectsBySession, getProjectsByUserId, updateProject, createOrder, getOrderByProject } from "./db";
+import { createTextTo3DTask, createImageTo3DTask, createMultiviewTo3DTask, createTextureModelTask, waitForTaskCompletion, getModelUrlFromResult, TRIPO_STYLES } from "./tripo";
 import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
 import Stripe from "stripe";
@@ -98,6 +98,40 @@ export const appRouter = router({
           ...p,
           imageUrls: p.imageUrls ? JSON.parse(p.imageUrls) : [],
           fourViewUrls: p.fourViewUrls ? JSON.parse(p.fourViewUrls) : [],
+          isSaved: p.isSaved || false,
+        }));
+      }),
+    
+    // Save a project to user's account (requires login)
+    saveToAccount: publicProcedure
+      .input(z.object({ projectId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        if (!ctx.user) {
+          throw new Error("LOGIN_REQUIRED");
+        }
+        
+        const project = await getProjectById(input.projectId);
+        if (!project) throw new Error("Project not found");
+        
+        // Update project with user ID
+        await updateProject(input.projectId, {
+          userId: ctx.user.id,
+          isSaved: true,
+        });
+        
+        return { success: true };
+      }),
+    
+    // Get all saved projects for logged-in user
+    getSavedProjects: publicProcedure
+      .query(async ({ ctx }) => {
+        if (!ctx.user) return [];
+        const savedProjects = await getProjectsByUserId(ctx.user.id);
+        return savedProjects.map((p: typeof savedProjects[number]) => ({
+          ...p,
+          imageUrls: p.imageUrls ? JSON.parse(p.imageUrls) : [],
+          fourViewUrls: p.fourViewUrls ? JSON.parse(p.fourViewUrls) : [],
+          isSaved: true,
         }));
       }),
   }),
@@ -171,6 +205,55 @@ export const appRouter = router({
           regenerationCount: project.regenerationCount,
           canRegenerate: project.regenerationCount < 2,
         };
+      }),
+    
+    // Get available texture/style options
+    getStyles: publicProcedure.query(() => {
+      return TRIPO_STYLES.filter(s => s.value !== "default");
+    }),
+    
+    // Apply texture/style transformation to existing model
+    applyStyle: publicProcedure
+      .input(z.object({
+        projectId: z.number(),
+        style: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        const project = await getProjectById(input.projectId);
+        if (!project) throw new Error("Project not found");
+        if (!project.tripoTaskId) throw new Error("No model to transform");
+        if (project.status !== "completed") throw new Error("Model must be completed first");
+        
+        // Find style prompt
+        const styleConfig = TRIPO_STYLES.find(s => s.value === input.style);
+        if (!styleConfig || !styleConfig.prompt) {
+          throw new Error("Invalid style selected");
+        }
+        
+        // Update status
+        await updateProject(input.projectId, { 
+          status: "generating_3d",
+          tripoTaskStatus: "queued",
+        });
+        
+        try {
+          // Create texture transformation task
+          const taskId = await createTextureModelTask(project.tripoTaskId, styleConfig.prompt);
+          
+          // Update with new task ID
+          await updateProject(input.projectId, {
+            tripoTaskId: taskId,
+            tripoTaskStatus: "running",
+          });
+          
+          // Start async polling
+          pollAndSaveModel(input.projectId, taskId);
+          
+          return { success: true, taskId };
+        } catch (error) {
+          await updateProject(input.projectId, { status: "completed" });
+          throw error;
+        }
       }),
   }),
 

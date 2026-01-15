@@ -209,3 +209,22 @@
 - [x] Fixed Tripo API response parsing (result.pbr_model.url nested structure)
 - [x] Fixed getModelUrlFromResult to handle both legacy and new API formats
 - [x] Fixed routers.ts to pass full result object instead of just output
+
+
+## New Features - User Feedback Round 2
+
+### Bug Fixes
+- [x] Fix 3D model display speed: Tripo API succeeds but UI doesn't show model
+- [x] Fix UI layout: Two generation boxes overlapping on project page
+
+### New Features
+- [x] Single image: Removed four-view generation (user decision - simplified flow)
+- [x] Add Tripo texture/style selection after 3D model generation
+- [x] Add one-click texture/style transformation
+- [x] Trial mode: Allow unregistered users to try, require registration to save
+- [x] Keep order flow: contact info + modification feedback + deposit payment
+
+
+### Updated Requirements (User Feedback)
+- [x] Image upload: allow text description alongside image for better 3D generation
+- [x] Remove four-view generation option (user decision - simplify flow)

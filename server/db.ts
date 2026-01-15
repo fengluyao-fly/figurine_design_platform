@@ -134,6 +134,8 @@ export async function updateProject(id: number, data: Partial<{
   modelUrl: string;
   modelKey: string;
   regenerationCount: number;
+  userId: number;
+  isSaved: boolean;
 }>): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -148,8 +150,17 @@ export async function updateProject(id: number, data: Partial<{
   if (data.modelUrl !== undefined) updateData.modelUrl = data.modelUrl;
   if (data.modelKey !== undefined) updateData.modelKey = data.modelKey;
   if (data.regenerationCount !== undefined) updateData.regenerationCount = data.regenerationCount;
+  if (data.userId !== undefined) updateData.userId = data.userId;
+  if (data.isSaved !== undefined) updateData.isSaved = data.isSaved;
 
   await db.update(projects).set(updateData).where(eq(projects.id, id));
+}
+
+export async function getProjectsByUserId(userId: number): Promise<Project[]> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  return db.select().from(projects).where(eq(projects.userId, userId)).orderBy(desc(projects.createdAt));
 }
 
 // Order operations

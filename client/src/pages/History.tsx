@@ -1,13 +1,27 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Box, ArrowLeft, Loader2, Eye, Type, Image, Images } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Box, ArrowLeft, Loader2, Eye, Save, LogIn, User } from "lucide-react";
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { format } from "date-fns";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { getLoginUrl } from "@/const";
 
 export default function History() {
-  const { data: projects, isLoading } = trpc.projects.getBySession.useQuery();
+  const { isAuthenticated, user } = useAuth();
+  
+  // Session-based projects (trial/anonymous)
+  const { data: sessionProjects, isLoading: isLoadingSession } = trpc.projects.getBySession.useQuery();
+  
+  // Saved projects (logged-in user)
+  const { data: savedProjects, isLoading: isLoadingSaved } = trpc.projects.getSavedProjects.useQuery(
+    undefined,
+    { enabled: isAuthenticated }
+  );
+
+  const isLoading = isLoadingSession || (isAuthenticated && isLoadingSaved);
 
   if (isLoading) {
     return (
@@ -16,6 +30,105 @@ export default function History() {
       </div>
     );
   }
+
+  // Filter session projects to only show unsaved ones
+  const unsavedSessionProjects = sessionProjects?.filter(p => !p.isSaved) || [];
+  const allSavedProjects = savedProjects || [];
+
+  const ProjectCard = ({ project, showSaveStatus = false }: { project: any; showSaveStatus?: boolean }) => (
+    <Card key={project.id} className="border-2 hover:border-primary/50 transition-colors">
+      <CardHeader>
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <CardTitle className="text-xl">Project #{project.id}</CardTitle>
+              <Badge
+                variant={
+                  project.status === "completed" || project.status === "ordered"
+                    ? "default"
+                    : "secondary"
+                }
+              >
+                {project.status}
+              </Badge>
+              {showSaveStatus && project.isSaved && (
+                <Badge variant="outline" className="text-green-600 border-green-600">
+                  <Save className="h-3 w-3 mr-1" />
+                  Saved
+                </Badge>
+              )}
+            </div>
+            <CardDescription className="text-base line-clamp-2">
+              {project.textPrompt || `${project.inputType.replace('_', ' ')} project`}
+            </CardDescription>
+            <p className="text-xs text-muted-foreground mt-2">
+              Created {format(new Date(project.createdAt), "MMM dd, yyyy 'at' HH:mm")}
+            </p>
+          </div>
+          {project.imageUrls && project.imageUrls.length > 0 && (
+            <img
+              src={project.imageUrls[0]}
+              alt="Project preview"
+              className="w-24 h-24 object-cover rounded-lg border ml-4"
+            />
+          )}
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="flex gap-3">
+          {project.status === "draft" && (
+            <Link href={`/project/${project.id}`}>
+              <Button variant="outline">
+                <Eye className="mr-2 h-4 w-4" />
+                Continue
+              </Button>
+            </Link>
+          )}
+          {(project.status === "generating_3d" || project.status === "generating_views") && (
+            <Link href={`/project/${project.id}`}>
+              <Button variant="outline">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                View Progress
+              </Button>
+            </Link>
+          )}
+          {(project.status === "completed" || project.status === "ordered" || project.status === "views_ready") && (
+            <Link href={`/project/${project.id}`}>
+              <Button>
+                <Eye className="mr-2 h-4 w-4" />
+                View Project
+              </Button>
+            </Link>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const EmptyState = ({ message, showLogin = false }: { message: string; showLogin?: boolean }) => (
+    <Card className="border-2">
+      <CardContent className="py-12 text-center">
+        <Box className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+        <h3 className="text-xl font-semibold mb-2">No Projects Yet</h3>
+        <p className="text-muted-foreground mb-6">{message}</p>
+        <div className="flex gap-4 justify-center">
+          <Link href="/">
+            <Button size="lg">Create New Project</Button>
+          </Link>
+          {showLogin && !isAuthenticated && (
+            <Button 
+              size="lg" 
+              variant="outline"
+              onClick={() => window.location.href = getLoginUrl()}
+            >
+              <LogIn className="mr-2 h-4 w-4" />
+              Login
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-purple-50/30 to-amber-50/20">
@@ -26,16 +139,33 @@ export default function History() {
             <div className="flex items-center gap-2 cursor-pointer">
               <Box className="h-8 w-8 text-primary" />
               <span className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                FigurineForge
+                Figurine Studio
               </span>
             </div>
           </Link>
-          <Link href="/">
-            <Button variant="ghost">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Home
-            </Button>
-          </Link>
+          <div className="flex items-center gap-4">
+            {isAuthenticated ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <User className="h-4 w-4" />
+                <span>{user?.name || user?.email || "User"}</span>
+              </div>
+            ) : (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => window.location.href = getLoginUrl()}
+              >
+                <LogIn className="mr-2 h-4 w-4" />
+                Login
+              </Button>
+            )}
+            <Link href="/">
+              <Button variant="ghost">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Home
+              </Button>
+            </Link>
+          </div>
         </div>
       </nav>
 
@@ -48,90 +178,88 @@ export default function History() {
           </p>
         </div>
 
-        {!projects || projects.length === 0 ? (
-          <Card className="border-2">
-            <CardContent className="py-12 text-center">
-              <Box className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">No Projects Yet</h3>
-              <p className="text-muted-foreground mb-6">
-                Start creating your first custom figurine design
-              </p>
-              <Link href="/create">
-                <Button size="lg">Create New Project</Button>
-              </Link>
-            </CardContent>
-          </Card>
+        {isAuthenticated ? (
+          <Tabs defaultValue="saved" className="space-y-6">
+            <TabsList className="grid w-full max-w-md grid-cols-2">
+              <TabsTrigger value="saved" className="flex items-center gap-2">
+                <Save className="h-4 w-4" />
+                Saved ({allSavedProjects.length})
+              </TabsTrigger>
+              <TabsTrigger value="session" className="flex items-center gap-2">
+                <Box className="h-4 w-4" />
+                This Session ({unsavedSessionProjects.length})
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="saved">
+              {allSavedProjects.length === 0 ? (
+                <EmptyState message="No saved projects yet. Create a project and save it to your account." />
+              ) : (
+                <div className="grid gap-6">
+                  {allSavedProjects.map((project) => (
+                    <ProjectCard key={project.id} project={project} />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="session">
+              {unsavedSessionProjects.length === 0 ? (
+                <EmptyState message="No unsaved projects in this session." />
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    These projects are only available in this browser session. Save them to your account to access them later.
+                  </p>
+                  <div className="grid gap-6">
+                    {unsavedSessionProjects.map((project) => (
+                      <ProjectCard key={project.id} project={project} showSaveStatus />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         ) : (
-          <div className="grid gap-6">
-            {projects.map((project) => (
-              <Card key={project.id} className="border-2 hover:border-primary/50 transition-colors">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <CardTitle className="text-xl">Project #{project.id}</CardTitle>
-                        <Badge
-                          variant={
-                            project.status === "completed" || project.status === "ordered"
-                              ? "default"
-                              : "secondary"
-                          }
-                        >
-                          {project.status}
-                        </Badge>
-                      </div>
-                      <CardDescription className="text-base line-clamp-2">
-                        {project.textPrompt || `${project.inputType.replace('_', ' ')} project`}
-                      </CardDescription>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Created {format(new Date(project.createdAt), "MMM dd, yyyy 'at' HH:mm")}
-                      </p>
-                    </div>
-                    {project.imageUrls && project.imageUrls.length > 0 && (
-                      <img
-                        src={project.imageUrls[0]}
-                        alt="Project preview"
-                        className="w-24 h-24 object-cover rounded-lg border ml-4"
-                      />
-                    )}
+          // Not logged in - show session projects with login prompt
+          <div className="space-y-6">
+            {/* Login prompt */}
+            <Card className="border-primary/30 bg-primary/5">
+              <CardContent className="py-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium">Login to Save Your Projects</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Create an account to save your projects and access them from any device
+                    </p>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex gap-3">
-                    {project.status === "draft" && (
-                      <Link href="/create">
-                        <Button variant="outline">
-                          <Eye className="mr-2 h-4 w-4" />
-                          Continue Editing
-                        </Button>
-                      </Link>
-                    )}
-                    {(project.status === "generating_3d" || project.status === "generating_views") && (
-                      <Link href={`/project/${project.id}`}>
-                        <Button variant="outline">
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          View Progress
-                        </Button>
-                      </Link>
-                    )}
-                    {(project.status === "completed" || project.status === "ordered" || project.status === "views_ready") && (
-                      <Link href={`/project/${project.id}`}>
-                        <Button>
-                          <Eye className="mr-2 h-4 w-4" />
-                          View Project
-                        </Button>
-                      </Link>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  <Button onClick={() => window.location.href = getLoginUrl()}>
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Login / Sign Up
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Session projects */}
+            {unsavedSessionProjects.length === 0 ? (
+              <EmptyState 
+                message="Start creating your first custom figurine design" 
+                showLogin 
+              />
+            ) : (
+              <div className="grid gap-6">
+                {unsavedSessionProjects.map((project) => (
+                  <ProjectCard key={project.id} project={project} showSaveStatus />
+                ))}
+              </div>
+            )}
           </div>
         )}
 
-        {projects && projects.length > 0 && (
+        {(allSavedProjects.length > 0 || unsavedSessionProjects.length > 0) && (
           <div className="mt-8 text-center">
-            <Link href="/create">
+            <Link href="/">
               <Button size="lg" variant="outline">
                 Create New Project
               </Button>

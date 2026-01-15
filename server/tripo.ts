@@ -236,6 +236,62 @@ export async function waitForTaskCompletion(
   }
 }
 
+// Available style presets for texture transformation
+export const TRIPO_STYLES = [
+  { value: "default", label: "Default", prompt: "" },
+  { value: "cartoon", label: "Cartoon Style", prompt: "cartoon style, anime, vibrant colors, cel-shaded" },
+  { value: "realistic", label: "Realistic", prompt: "realistic, photorealistic, detailed textures, natural lighting" },
+  { value: "clay", label: "Clay/Matte", prompt: "clay sculpture, matte finish, soft shadows, handcrafted look" },
+  { value: "metallic", label: "Metallic", prompt: "metallic surface, chrome, reflective, shiny metal" },
+  { value: "gold", label: "Gold", prompt: "gold material, golden surface, luxurious, precious metal" },
+  { value: "bronze", label: "Ancient Bronze", prompt: "ancient bronze, patina, antique, weathered metal" },
+];
+
+/**
+ * Apply texture/style transformation to an existing model
+ * @param originalTaskId Task ID of the original model generation
+ * @param stylePrompt Text prompt describing the desired style
+ * @returns Task ID for polling
+ */
+export async function createTextureModelTask(
+  originalTaskId: string,
+  stylePrompt: string
+): Promise<string> {
+  if (!TRIPO_API_KEY) {
+    throw new Error("TRIPO_API_KEY is not configured");
+  }
+
+  console.log("[Tripo] Creating texture_model task for:", originalTaskId);
+  console.log("[Tripo] Style prompt:", stylePrompt);
+
+  const response = await axios.post<TripoTaskResponse>(
+    `${TRIPO_API_BASE}/task`,
+    {
+      type: "texture_model",
+      original_model_task_id: originalTaskId,
+      texture_prompt: {
+        text: stylePrompt,
+      },
+      texture: true,
+      pbr: true,
+      texture_quality: "standard", // Speed priority
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${TRIPO_API_KEY}`,
+      },
+    }
+  );
+
+  if (response.data.code !== 0) {
+    throw new Error(`Tripo API error: ${JSON.stringify(response.data)}`);
+  }
+
+  console.log("[Tripo] Texture model task created:", response.data.data.task_id);
+  return response.data.data.task_id;
+}
+
 /**
  * Get the model URL from task result
  * Handles both pbr_model and model fields

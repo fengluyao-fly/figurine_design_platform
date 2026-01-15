@@ -25,6 +25,8 @@ export type InsertUser = typeof users.$inferInsert;
 export const projects = mysqlTable("projects", {
   id: int("id").autoincrement().primaryKey(),
   sessionId: varchar("sessionId", { length: 128 }).notNull(),
+  userId: int("userId"), // null for trial users, set when user saves to account
+  isSaved: boolean("isSaved").default(false).notNull(), // whether user has saved this project to their account
   
   // Legacy field - kept for backwards compatibility
   description: text("description"),
