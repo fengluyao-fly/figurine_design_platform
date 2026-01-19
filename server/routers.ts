@@ -208,13 +208,13 @@ export const appRouter = router({
           modelKey,
         });
         
-        // Create order immediately
+        // Create order immediately (free during promotion)
         const orderId = await createOrder({
           projectId,
           contactEmail: input.contactEmail,
           contactPhone: input.contactPhone,
           modificationFeedback: input.notes || "User uploaded existing model",
-          paymentStatus: "pending",
+          paymentStatus: "paid", // Free during promotion
         });
         
         // Update project status
@@ -230,13 +230,14 @@ export const appRouter = router({
         
         console.log(`[Upload] User uploaded model for project ${projectId}, order ${orderId}`);
         
-        // Send notification to admin
+        // Send notification to admin with model URL
         await notifyModelUpload({
           projectId,
           fileName: input.fileName,
           contactEmail: input.contactEmail,
           contactPhone: input.contactPhone,
           notes: input.notes,
+          modelUrl,
         });
         
         await notifyNewOrder({
@@ -246,6 +247,7 @@ export const appRouter = router({
           contactPhone: input.contactPhone,
           feedback: input.notes,
           isUserUploaded: true,
+          modelUrl,
         });
         
         return { projectId, orderId, success: true };
@@ -374,6 +376,7 @@ export const appRouter = router({
   }),
 
   orders: router({
+    // Create order and send notification (no payment required during promotion)
     create: publicProcedure
       .input(z.object({
         projectId: z.number(),
@@ -382,17 +385,21 @@ export const appRouter = router({
         designFeedback: z.string(),
       }))
       .mutation(async ({ input }) => {
+        // Get project to include model URL in notification
+        const project = await getProjectById(input.projectId);
+        if (!project) throw new Error("Project not found");
+        
         const orderId = await createOrder({
           projectId: input.projectId,
           contactEmail: input.contactEmail,
           contactPhone: input.contactPhone,
           modificationFeedback: input.designFeedback,
-          paymentStatus: "pending",
+          paymentStatus: "paid", // Free during promotion
         });
         
         await updateProject(input.projectId, { status: "ordered" });
         
-        // Send notification to admin
+        // Send notification to admin with model URL
         await notifyNewOrder({
           orderId,
           projectId: input.projectId,
@@ -400,9 +407,12 @@ export const appRouter = router({
           contactPhone: input.contactPhone,
           feedback: input.designFeedback,
           isUserUploaded: false,
+          modelUrl: project.modelUrl || undefined,
         });
         
-        return { orderId };
+        console.log(`[Order] Created order ${orderId} for project ${input.projectId} (promotion - no payment)`);
+        
+        return { orderId, success: true };
       }),
   }),
 

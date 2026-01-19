@@ -81,7 +81,6 @@ export default function Project() {
   const applyStyleMutation = trpc.generate.applyStyle.useMutation();
   const saveToAccountMutation = trpc.projects.saveToAccount.useMutation();
   const createOrderMutation = trpc.orders.create.useMutation();
-  const createCheckoutMutation = trpc.payment.createCheckoutSession.useMutation();
 
   const handleRegenerate = async () => {
     if (!generationStatus?.canRegenerate) {
@@ -160,25 +159,18 @@ export default function Project() {
 
     setIsSubmitting(true);
     try {
-      const orderResult = await createOrderMutation.mutateAsync({
+      await createOrderMutation.mutateAsync({
         projectId,
         contactEmail,
         contactPhone: contactPhone || undefined,
         designFeedback: designFeedback || "No specific feedback",
       });
 
-      const checkoutResult = await createCheckoutMutation.mutateAsync({
-        projectId,
-        orderId: orderResult.orderId,
-        contactEmail,
-      });
-
-      if (checkoutResult.sessionUrl) {
-        toast.success("Redirecting to payment...");
-        window.open(checkoutResult.sessionUrl, '_blank');
-      }
+      toast.success("Order submitted successfully!");
+      // Redirect to success page
+      setLocation("/order-success");
     } catch (error: any) {
-      toast.error(error.message || "Failed to create order");
+      toast.error(error.message || "Failed to submit order");
     } finally {
       setIsSubmitting(false);
     }
@@ -591,13 +583,13 @@ export default function Project() {
                     </p>
                   </div>
 
-                  <div className="bg-muted/50 rounded-lg p-4 space-y-2">
-                    <div className="flex justify-between">
-                      <span>Design Deposit</span>
-                      <span className="font-semibold">$20.00</span>
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium text-green-700">🎉 Promotion Period</span>
+                      <span className="font-semibold text-green-600">FREE</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      Deposit covers expert design review and refinement. Manufacturing costs quoted separately.
+                    <p className="text-xs text-green-600">
+                      Submit your order for free during our promotion period! Our team will contact you within 24 hours.
                     </p>
                   </div>
 
@@ -610,12 +602,12 @@ export default function Project() {
                     {isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Processing...
+                        Submitting...
                       </>
                     ) : (
                       <>
                         <Send className="mr-2 h-5 w-5" />
-                        Pay Deposit & Submit Order
+                        Submit Order (Free)
                       </>
                     )}
                   </Button>

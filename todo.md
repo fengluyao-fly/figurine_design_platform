@@ -335,3 +335,33 @@
 - [x] Explain value proposition for small batch production (100-20,000 units)
   - Visual comparison: <100 (3D print), 100-20K (Maker Mart sweet spot), >20K (direct factory)
 - [x] Highlight Maker Mart's role in bridging design and manufacturing
+
+## Promotion Phase Adjustments - User Feedback Round 10
+
+### Save Model Requires Login
+- [x] Verify save model requires user registration/login
+  - Server: throws LOGIN_REQUIRED error if not authenticated
+  - Client: redirects to login page and stores pending project ID
+- [x] Ensure proper redirect to login when saving without account
+- [x] Support email, Google, phone authentication methods (via OAuth)
+
+### Remove Payment Flow (Promotion Phase)
+- [x] Remove Stripe payment requirement for order submission
+  - orders.create now sets paymentStatus to "paid" directly
+- [x] Change "Pay & Submit" to "Submit Order (Free)" with promotion banner
+- [x] Send order notification email to admin: 1125019809@qq.com
+- [x] Include all order details in email (project info, contact, model URL)
+
+### Email Notification Setup
+- [x] Configure email service for sending notifications
+  - Using Resend API with RESEND_API_KEY
+- [x] Send email when user submits order (AI-generated model)
+- [x] Send email when user uploads existing model
+- [x] Include project details, contact info, and model download link
+  - HTML email with styled sections for order details, contact, feedback
+
+### Domain Preparation
+- [x] Update website configuration for makermart.art domain
+  - notification.ts uses makermart.art as site URL
+- [ ] Purchase domain and publish website (user action required)
+
