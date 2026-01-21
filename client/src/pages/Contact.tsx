@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Box, Mail, Phone, MapPin } from "lucide-react";
+import { Box, Mail, MessageCircle } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { Link } from "wouter";
@@ -53,17 +53,18 @@ export default function Contact() {
             </CardHeader>
             <CardContent className="space-y-6">
               <p className="text-muted-foreground">
-                Have questions about our 3D figurine manufacturing services? We're here to help! 
+                Have questions about our 3D model manufacturing services? We're here to help! 
                 Reach out to us through any of the following channels.
               </p>
 
               <div className="space-y-4">
+                {/* Email */}
                 <div className="flex items-start gap-4 p-4 rounded-lg bg-muted/50">
                   <Mail className="h-6 w-6 text-primary mt-0.5" />
                   <div>
                     <h3 className="font-semibold">Email</h3>
-                    <a href="mailto:contact@makermart.com" className="text-primary hover:underline">
-                      contact@makermart.com
+                    <a href="mailto:fengluyao1@hotmail.com" className="text-primary hover:underline">
+                      fengluyao1@hotmail.com
                     </a>
                     <p className="text-sm text-muted-foreground mt-1">
                       We typically respond within 24 hours
@@ -71,45 +72,35 @@ export default function Contact() {
                   </div>
                 </div>
 
+                {/* WhatsApp */}
                 <div className="flex items-start gap-4 p-4 rounded-lg bg-muted/50">
-                  <Phone className="h-6 w-6 text-primary mt-0.5" />
+                  <MessageCircle className="h-6 w-6 text-green-600 mt-0.5" />
                   <div>
-                    <h3 className="font-semibold">Phone</h3>
-                    <a href="tel:+1-800-MAKER-MT" className="text-primary hover:underline">
-                      +1-800-MAKER-MT
-                    </a>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Monday - Friday, 9:00 AM - 6:00 PM (EST)
+                    <h3 className="font-semibold">WhatsApp</h3>
+                    <p className="text-muted-foreground">
+                      Coming soon
                     </p>
                   </div>
                 </div>
 
+                {/* WeChat */}
                 <div className="flex items-start gap-4 p-4 rounded-lg bg-muted/50">
-                  <MapPin className="h-6 w-6 text-primary mt-0.5" />
+                  <svg className="h-6 w-6 text-green-500 mt-0.5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 0 1-.023-.156.49.49 0 0 1 .201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-2.931-5.837-6.656-6.088V8.89c-.135-.004-.27-.018-.407-.032zm-2.53 3.274c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.97-.982zm4.844 0c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.969-.982z"/>
+                  </svg>
                   <div>
-                    <h3 className="font-semibold">Office</h3>
-                    <p className="text-foreground">
-                      Maker Mart Inc.<br />
-                      123 Manufacturing Way<br />
-                      San Francisco, CA 94102
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      By appointment only
+                    <h3 className="font-semibold">WeChat</h3>
+                    <p className="text-muted-foreground">
+                      Coming soon
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-4 border-t">
-                <h3 className="font-semibold mb-2">Business Hours</h3>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <span className="text-muted-foreground">Monday - Friday:</span>
-                  <span>9:00 AM - 6:00 PM (EST)</span>
-                  <span className="text-muted-foreground">Saturday:</span>
-                  <span>10:00 AM - 4:00 PM (EST)</span>
-                  <span className="text-muted-foreground">Sunday:</span>
-                  <span>Closed</span>
-                </div>
+              <div className="pt-4 border-t text-center">
+                <p className="text-sm text-muted-foreground">
+                  Based in China, serving customers worldwide.
+                </p>
               </div>
             </CardContent>
           </Card>

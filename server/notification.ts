@@ -3,7 +3,7 @@
  * Uses Resend API for email delivery
  */
 
-const ADMIN_EMAIL = "1125019809@qq.com";
+const ADMIN_EMAIL = "fengluyao1@hotmail.com";
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM_EMAIL = "orders@makermart.art";
 

@@ -365,3 +365,16 @@
   - notification.ts uses makermart.art as site URL
 - [ ] Purchase domain and publish website (user action required)
 
+
+## Contact Page & Email Update - User Feedback Round 11
+
+### Notification Email Update
+- [x] Change admin notification email from 1125019809@qq.com to fengluyao1@hotmail.com
+
+### Contact Page Simplification
+- [x] Remove Office address section
+- [x] Remove Business Hours section
+- [x] Keep Email only (fengluyao1@hotmail.com)
+- [x] Add WhatsApp placeholder (Coming soon)
+- [x] Add WeChat placeholder (Coming soon)
+- [x] Remove Phone section for now
