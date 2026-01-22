@@ -378,3 +378,11 @@
 - [x] Add WhatsApp placeholder (Coming soon)
 - [x] Add WeChat placeholder (Coming soon)
 - [x] Remove Phone section for now
+
+
+## Contact Info Update - User Feedback Round 12
+
+- [x] Update email to makermartart@gmail.com
+- [x] Add phone number: +86 137 0190 2181
+- [x] Add WhatsApp: +86 137 0190 2181 (with direct chat link)
+- [x] Add WeChat: +86 137 0190 2181

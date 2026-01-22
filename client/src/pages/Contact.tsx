@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Box, Mail, MessageCircle } from "lucide-react";
+import { Box, Mail, Phone, MessageCircle } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { Link } from "wouter";
@@ -63,12 +63,23 @@ export default function Contact() {
                   <Mail className="h-6 w-6 text-primary mt-0.5" />
                   <div>
                     <h3 className="font-semibold">Email</h3>
-                    <a href="mailto:fengluyao1@hotmail.com" className="text-primary hover:underline">
-                      fengluyao1@hotmail.com
+                    <a href="mailto:makermartart@gmail.com" className="text-primary hover:underline">
+                      makermartart@gmail.com
                     </a>
                     <p className="text-sm text-muted-foreground mt-1">
                       We typically respond within 24 hours
                     </p>
+                  </div>
+                </div>
+
+                {/* Phone */}
+                <div className="flex items-start gap-4 p-4 rounded-lg bg-muted/50">
+                  <Phone className="h-6 w-6 text-primary mt-0.5" />
+                  <div>
+                    <h3 className="font-semibold">Phone</h3>
+                    <a href="tel:+8613701902181" className="text-primary hover:underline">
+                      +86 137 0190 2181
+                    </a>
                   </div>
                 </div>
 
@@ -77,8 +88,11 @@ export default function Contact() {
                   <MessageCircle className="h-6 w-6 text-green-600 mt-0.5" />
                   <div>
                     <h3 className="font-semibold">WhatsApp</h3>
-                    <p className="text-muted-foreground">
-                      Coming soon
+                    <a href="https://wa.me/8613701902181" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                      +86 137 0190 2181
+                    </a>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Click to chat directly
                     </p>
                   </div>
                 </div>
@@ -90,8 +104,11 @@ export default function Contact() {
                   </svg>
                   <div>
                     <h3 className="font-semibold">WeChat</h3>
-                    <p className="text-muted-foreground">
-                      Coming soon
+                    <p className="text-foreground">
+                      +86 137 0190 2181
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Search by phone number to add
                     </p>
                   </div>
                 </div>
