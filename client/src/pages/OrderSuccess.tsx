@@ -13,13 +13,8 @@ export default function OrderSuccess() {
       {/* Navigation */}
       <nav className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container py-4 flex items-center justify-between">
-          <Link href="/">
-            <div className="flex items-center gap-2 cursor-pointer">
-              <Box className="h-8 w-8 text-primary" />
-              <span className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                Maker Mart
-              </span>
-            </div>
+          <Link href="/" className="flex items-center gap-2">
+            <img src="/logo.png" alt="Maker Mart" className="h-10" />
           </Link>
           <nav className="flex items-center gap-1 sm:gap-2">
             <Link href="/about">

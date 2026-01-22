@@ -210,11 +210,8 @@ export default function Project() {
       <div className="min-h-screen bg-gradient-to-br from-background via-purple-50/30 to-amber-50/20">
         <header className="border-b border-border/40 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
           <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2 text-xl font-bold">
-              <Box className="h-6 w-6 text-primary" />
-              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                Maker Mart
-              </span>
+            <Link href="/" className="flex items-center gap-2">
+              <img src="/logo.png" alt="Maker Mart" className="h-10" />
             </Link>
             <nav className="flex items-center gap-1 sm:gap-2">
               <Link href="/about">
@@ -308,11 +305,8 @@ export default function Project() {
     <div className="min-h-screen bg-gradient-to-br from-background via-purple-50/30 to-amber-50/20">
       <header className="border-b border-border/40 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-xl font-bold">
-            <Box className="h-6 w-6 text-primary" />
-            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Maker Mart
-            </span>
+          <Link href="/" className="flex items-center gap-2">
+            <img src="/logo.png" alt="Maker Mart" className="h-10" />
           </Link>
           <nav className="flex items-center gap-1 sm:gap-2">
             <Link href="/about">

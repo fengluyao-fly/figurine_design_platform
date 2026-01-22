@@ -386,3 +386,11 @@
 - [x] Add phone number: +86 137 0190 2181
 - [x] Add WhatsApp: +86 137 0190 2181 (with direct chat link)
 - [x] Add WeChat: +86 137 0190 2181
+
+
+## Logo Application - User Feedback Round 13
+
+- [x] Copy logo images to public directory
+- [x] Set icon version as favicon
+- [x] Update navigation bar to use logo image instead of icon
+- [x] Apply to all pages: Home, About, Contact, Project, History, UploadModel, OrderSuccess
